@@ -6,6 +6,8 @@
     Copyright (c) 2016 YOPEY YOPEY LLC
 */
 
+(function(){
+
 var defaultDiv = null;
 var sides = {
     'leftTop': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
@@ -236,15 +238,15 @@ function debugOne(text, options)
 }
 
 // adds a debug message showing who called the function
-function caller()
+function caller(options)
 {
     if (arguments.callee.caller)
     {
-        debug('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString());
+        debug('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
     }
     else
     {
-        debug('Called by: top level');
+        debug('Called by: top level', options);
     }
 }
 
@@ -690,8 +692,8 @@ if (typeof define === 'function' && define.amd)
     {
         return {
             Debug: Debug,
-            // debug: message,
-            // debugOne: messageOne
+            debug: message,
+            debugOne: messageOne
         };
     });
 }
@@ -700,14 +702,16 @@ if (typeof define === 'function' && define.amd)
 if (typeof exports !== 'undefined')
 {
     exports.Debug = Debug;
-    // exports.debug = message;
-    // exports.debugOne = messageOne;
+    exports.debug = debug;
+    exports.debugOne = debugOne;
 }
 
 // define globally in case AMD is not available or available but not used
 if (typeof window !== 'undefined')
 {
     window.Debug = Debug;
-    // window.debug = message;
-    // window.debugOne = messageOne;
+    window.debug = debug;
+    window.debugOne = debugOne;
 }
+
+})();

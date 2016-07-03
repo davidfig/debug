@@ -9,7 +9,7 @@
 <body>
     <script>
         Debug.init();
-        var fps = add('FPS', {text: '0 FPS', side: 'rightBottom'});
+        var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
         // debug('testing . . . ')
         Debug.add('counter', {text: '0 items', side: 'leftTop'});
         var meter = Debug.addMeter('panel', {side: 'rightBottom'});
@@ -19,6 +19,8 @@
             debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
         }, 60);
         Debug.caller();
-        throw new Error(200, 'test error.');    
+        debug('This error is for testing:');
+        Debug.add('testing', {text: 'this is another panel.'});
+        throw new Error(200, 'test error.');
     </script
 </body>
