@@ -16,18 +16,21 @@
 <body>
     <script>
         Debug.init();
+
+        debug('This is a test message.');
+
+        // add an FPS panel and meter
         var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
-        Debug.add('counter', {text: '0 items', side: 'leftTop'});
         var meter = Debug.addMeter('panel', {side: 'rightBottom'});
+
+        // update the FPS
         setInterval(function () {
             var FPS = Math.random() * 60;
             Debug.meter(Math.random() * 2 - 1, {panel: meter});
             debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
         }, 60);
-        Debug.caller();
-        debug('This error is for testing:');
+
         Debug.add('testing', {text: 'this is another panel.'});
-        throw new Error(200, 'test error.');
     </script>
     <div class="code">
         <div>
