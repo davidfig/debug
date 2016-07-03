@@ -165,19 +165,19 @@ function getDiv(options)
     {
         div = defaultDiv;
     }
-    else
+    else if (options.panel)
     {
         div = options.panel;
-        if (!div)
+    }
+    else
+    {
+        for (var name in sides)
         {
-            for (var name in sides)
+            var panel = sides[name].panels[options.name];
+            if (panel)
             {
-                var panel = sides[name].panels[options.name];
-                if (panel)
-                {
-                    div = panel;
-                    break;
-                }
+                div = panel;
+                break;
             }
         }
     }
