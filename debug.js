@@ -33,7 +33,7 @@ function init(options)
 }
 
 // options {}
-//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+//  side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
 //  expandable: 0 (default) or percent size to expand
 //  default: if true then this panel becomes default for calls to debug and debugOne
 //  size: 0 (default) or percent size
@@ -47,7 +47,7 @@ function add(name, options)
     {
         defaultDiv = div;
     }
-    var side = sides[options.side || 'leftBottom'];
+    var side = sides[options.side || 'rightBottom'];
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
@@ -88,7 +88,7 @@ function addMeter(name, options)
     div.style.height = div.height + 'px';
     document.body.appendChild(div);
     div.options = options;
-    var side = sides[options.side || 'leftBottom'];
+    var side = sides[options.side || 'rightBottom'];
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
