@@ -12,9 +12,11 @@ var right = {isMinimized: false, minimize: null, count: null, panels: [], minimi
 
 function init()
 {
-    add('debug', {size: 0.15/*, expandable: 0.5*/});
-    window.addEventListener('error', error);
+    add('debug', {size: 0.15, expandable: 0.5});
+    var fps = add('FPS', {text: '0 FPS'});
+    debugOne('10 FPS', {panel: fps});
     window.addEventListener('resize', resize);
+    // window.addEventListener('error', error);
 }
 
 // options {}
@@ -40,7 +42,7 @@ function add(name, options)
     {
         side = right;
         s.right = 0;
-        if (!left.minimize)
+        if (!right.minimize)
         {
             minimizeCreate('right', false);
         }
@@ -49,25 +51,30 @@ function add(name, options)
     {
         side = left;
         s.left = 0;
-        if (!right.minimize)
+        if (!left.minimize)
         {
             minimizeCreate('left', true);
         }
     }
     div.side = side;
     side.panels[name] = div;
-    style(div);
+    style(div, options.side !== 'right');
     div.click = handleClick;
     click(div);
+    if (options.text)
+    {
+        div.innerHTML = options.text;
+    }
     resize();
     return div;
 }
 
-// replaces all text in the panel
+// adds text to the end of in the panel and scrolls the panel
 // options:
+//      color: background color for text
 //      name: name of panel
 //      panel: panel returned from Debug.Add()
-function debugOne(text, color, options)
+function debug(text, options)
 {
     var div;
     options = options || {};
@@ -79,8 +86,57 @@ function debugOne(text, color, options)
     {
         div = options.panel || left.panels[options.name] || right.panels[options.name];
     }
-    color = color || "rgb(100,100,100)";
-    div.innerHTML = '<p style="background: ' + color + '">';
+    var color = options.color || "transparent";
+    var error = false;
+    if (color === 'error')
+    {
+        error = true;
+        color = 'red';
+    }
+    var result = '';
+    result += '<span style="background: ' + color + '">';
+    if (text === null)
+    {
+        result += 'null';
+    }
+    else if (typeof text === 'object')
+    {
+        for (var i = 0; i < text.length; i++)
+        {
+            result += text[i] + ((i !== text.length -1) ? ', ' : '');
+        }
+    }
+    else
+    {
+        result += text;
+    }
+    result += '</span>';
+    div.innerHTML += result;
+    div.scrollTop = div.scrollHeight;
+    // if (error && minimized)
+    // {
+    //     openMessageBox();
+    // }
+}
+
+// replaces all text in the panel
+// options:
+//      name: name of panel
+//      panel: panel returned from Debug.Add()
+function debugOne(text, options)
+{
+    var div;
+    options = options || {};
+    if (!options.panel && !options.name)
+    {
+        div = defaultDiv;
+    }
+    else
+    {
+        div = options.panel || left.panels[options.name] || right.panels[options.name];
+    }
+    color = options.color || "rgb(100,100,100)";
+    div.innerHTML = '<span style="background: ' + color + '">';
     if (typeof text === 'object')
     {
         for (var i = 0, _i = text.length; i < _i; i++)
@@ -88,9 +144,11 @@ function debugOne(text, color, options)
             div.innerHTML += text[i] + ((i !== _i -1) ? ', ' : '');
         }
     }
-    else {
+    else
+    {
         div.innerHTML += text;
     }
+    div.innerHTML += '</span>';
     div.scrollTop = 0;
 }
 
@@ -109,6 +167,7 @@ function style(div, isLeft)
 
 function minimizeCreate(isLeft)
 {
+console.log('minimize')
     var div = document.createElement('div');
     div.options = {};
     document.body.appendChild(div);
@@ -249,7 +308,6 @@ function resizeSide(side)
                     size = max * div.options.size;
                 }
                 div.style.width = div.style.height = size + 'px';
-                div.style.fontSize = div.options.size + '%';
                 div.style.display = 'block';
             }
             div.scrollTop = div.scrollHeight;
@@ -280,44 +338,6 @@ function resize()
 }
 
 /*
-// shows text in mesage box
-// PARAMS: text may be a string or an array of strings
-// if backgroundColor === 'error' then it uses red and maximizes message box
-function debug(text, backgroundColor)
-{
-    color = color || "transparent";
-    var error = false;
-    if (backgroundColor === 'error')
-    {
-        error = true;
-        color = 'red';
-    }
-    var result = '';
-    result += '<p style="background: ' + backgroundColor + '">';
-    if (text === null)
-    {
-        result += 'null';
-    }
-    else if (typeof text === 'object')
-    {
-        for (var i = 0; i < text.length; i++)
-        {
-            result += text[i] + ((i !== text.length -1) ? ', ' : '');
-        }
-    }
-    else
-    {
-        result += text;
-    }
-    result += '</p>';
-    messageBox.innerHTML += result;
-    messageBox.scrollTop = messageBox.scrollHeight;
-    if (error && minimized)
-    {
-        openMessageBox();
-    }
-}
-
 fps: function(fps)
 {
     divFPS.innerHTML = fps + " FPS";
