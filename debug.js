@@ -289,7 +289,7 @@ function minimizeCreate(side)
     var count = document.createElement('span');
     minimize.click = handleMinimize;
     count.click = handleCount;
-    if (isLeft)
+    if (isLeft(side))
     {
         div.appendChild(minimize);
         div.appendChild(count);
