@@ -33,10 +33,11 @@ function init(options)
 }
 
 // options {}
-//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+//  side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
 //  expandable: 0 (default) or percent size to expand
 //  default: if true then this panel becomes default for calls to debug and debugOne
 //  size: 0 (default) or percent size
+//  style: object with CSS styles for the panel
 function add(name, options)
 {
     options = options || {};
@@ -47,7 +48,7 @@ function add(name, options)
     {
         defaultDiv = div;
     }
-    var side = sides[options.side || 'leftBottom'];
+    var side = sides[options.side || 'rightBottom'];
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
@@ -58,6 +59,13 @@ function add(name, options)
     else
     {
         s.right = 0;
+    }
+    if (options.style)
+    {
+        for (var name in options.style)
+        {
+            s[name] = options.style[name];
+        }
     }
     minimizeCreate(side);
     div.side = side;
@@ -88,7 +96,7 @@ function addMeter(name, options)
     div.style.height = div.height + 'px';
     document.body.appendChild(div);
     div.options = options;
-    var side = sides[options.side || 'leftBottom'];
+    var side = sides[options.side || 'rightBottom'];
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
@@ -239,8 +247,8 @@ function debugOne(text, options)
     {
         html += text;
     }
-    div.innerHTML = html + '</span>';
-    div.scrollTop = 0;
+    html += '</span>';
+    div.innerHTML = html;
 }
 
 // adds a debug message showing who called the function
@@ -254,6 +262,19 @@ function caller(options)
     {
         debug('Called by: top level', options);
     }
+}
+
+// returns a panel based on its name
+function get(name)
+{
+    for (side in sides)
+    {
+        if (sides[side].panels[name])
+        {
+            return sides[side].panels[name];
+        }
+    }
+    return null;
 }
 
 function style(div, side)
@@ -490,24 +511,6 @@ function error(e)
 }
 
 /*
-fps: function(fps)
-{
-    divFPS.innerHTML = fps + " FPS";
-    var mode = divFPS.mode;
-    if (fps === 60 || fps === '--')
-    {
-        if (mode !== 'normal')
-        {
-            divFPS.style.backgroundColor = 'rgba(100,100,100,0.75)';
-            mode = 'normal';
-        }
-    }
-    else if (mode !== 'hot')
-    {
-        divFPS.style.backgroundColor = 'rgba(150,100,100,0.75)';
-        mode = 'hot';
-    }
-},
 
 animate: function(amount)
 {
@@ -580,65 +583,6 @@ handleState: function()
     changeState();
 },
 
-handleClick: function()
-{
-    if (state === '1')
-    {
-        state = '0';
-    }
-    minimized = !minimized;
-    changeState();
-},
-
-changeState: function()
-{
-    switch (state)
-    {
-        case '0':
-            div.style.display = 'block';
-            divFPS.style.display = 'block';
-            divRender.style.display = 'none';
-            divRenderCount.style.display = 'none';
-            divAnimate.style.display = 'none';
-            divMeter.style.display = 'none';
-            divMinimize.style.display = 'block';
-            divMinimize.innerHTML = '+';
-            for (var i = 0; i < extras.length; i++)
-            {
-                extras[i].style.display = 'none';
-            }
-        break;
-        case '1':
-            div.style.display = 'none';
-            divFPS.style.display = 'none';
-            divRender.style.display = 'none';
-            divRenderCount.style.display = 'none';
-            divAnimate.style.display = 'none';
-            divMeter.style.display = 'none';
-            divMinimize.style.display = 'block';
-            divMinimize.innerHTML = '+';
-            for (var i = 0; i < extras.length; i++)
-            {
-                extras[i].style.display = 'none';
-            }
-        break;
-        case '2':
-            div.style.display = 'block';
-            divFPS.style.display = 'block';
-            divRender.style.display = 'block';
-            divRenderCount.style.display = 'block';
-            divAnimate.style.display = 'block';
-            divMeter.style.display = 'block';
-            divMinimize.style.display = 'block';
-            divMinimize.innerHTML = '&mdash;';
-            for (var i = 0; i < extras.length; i++)
-            {
-                extras[i].style.display = 'block';
-            }
-        break;
-    }
-    resize();
-},
 
 initPercentages: function()
 {
@@ -688,6 +632,7 @@ var Debug = {
     add: add,
     addMeter: addMeter,
     meter: meter,
+    get: get,
     caller: caller
 };
 
@@ -698,8 +643,8 @@ if (typeof define === 'function' && define.amd)
     {
         return {
             Debug: Debug,
-            debug: message,
-            debugOne: messageOne
+            debug: debug,
+            debugOne: debugOne
         };
     });
 }
