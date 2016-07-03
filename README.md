@@ -47,30 +47,30 @@ options {}
 
 ###Debug.addMeter(name, options)
 Adds a meter panel
-options {}
- side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
- width: defaults to 100px
- height: default to 25px
+* options {}
+  - side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+  - width: defaults to 100px
+  - height: default to 25px
 
 ###Debug.meter(percent, options)
 updates the meter
 adds a line to the end of the meter and scrolls the meter as necessary
-     percent: between -1 to +1
-     name: name of panel
-     panel: panel returned from Debug.Add()
+* percent: between -1 to +1
+* name: name of panel
+* panel: panel returned from Debug.Add()
 
 ###Debug.debug(text, options) or debug(text, options)
 adds text to the end of a panel and scrolls the panel
-options:
-     color: background color for text
-     name: name of panel
-     panel: panel returned from Debug.Add()
+* options:
+  - color: background color for text
+  - name: name of panel
+  - panel: panel returned from Debug.Add()
 
 ###Debug.debugOne(text, options) or debugOne(text, options)
 replaces all text in the panel
-options:
-     name: name of panel
-     panel: panel returned from Debug.Add()
+* options:
+  - name: name of panel
+  - panel: panel returned from Debug.Add()
 
 ###Debug.caller(options)
 adds a debug message showing who called the function
