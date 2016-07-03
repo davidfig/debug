@@ -62,6 +62,79 @@ function add(name, options)
     return div;
 }
 
+// options {}
+//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+//  width: defaults to 100px
+//  height: default to 25px
+function addMeter(name, options)
+{
+    options = options || {};
+    var div = document.createElement('canvas');
+    div.type = 'meter';
+    div.width = options.width || 100;
+    div.height = options.height || 25;
+    div.style.width = div.width + 'px';
+    div.style.height = div.height + 'px';
+    document.body.appendChild(div);
+    div.options = options;
+    var side = sides[options.side || 'leftBottom'];
+    var s = div.style;
+    s.fontFamily = "Helvetica Neue";
+    s.position = "fixed";
+    if (isLeft(side))
+    {
+        s.left = 0;
+    }
+    else
+    {
+        s.right = 0;
+    }
+    minimizeCreate(side);
+    div.side = side;
+    side.panels[name] = div;
+    style(div, side);
+    div.click = handleClick;
+    click(div);
+    if (options.text)
+    {
+        div.innerHTML = options.text;
+    }
+    resize();
+    return div;
+}
+
+function meter(percent, options)
+{
+    var div;
+    options = options || {};
+    if (!options.panel && !options.name)
+    {
+        div = defaultDiv;
+    }
+    else
+    {
+        div = options.panel || left.panels[options.name] || right.panels[options.name];
+    }
+    c = div.getContext('2d');
+    var data = c.getImageData(0, 0, div.width, div.height);
+    c.putImageData(data, -1, 0);
+    c.clearRect(div.width - 1, 0, div.width - 1, div.height);
+    var height, middle = Math.round(div.height / 2);
+    if (percent < 0)
+    {
+        c.fillStyle = 'red';
+        percent = Math.abs(percent);
+        height = (25 - middle) * -percent;
+        c.fillRect(div.width - 1, middle, div.width - 1, middle + height);
+    }
+    else
+    {
+        c.fillStyle = 'white';
+        height = middle * percent;
+        c.fillRect(div.width - 1, height, div.width - 1, middle - height);
+    }
+}
+
 // adds text to the end of in the panel and scrolls the panel
 // options:
 //      color: background color for text
@@ -403,20 +476,20 @@ addRender: function()
     return [s, count];
 },
 
-addRenderCount: function()
-{
-    var s = document.createElement('span');
-    var nodes = divRenderCount.childNodes;
-    divRenderCount.insertBefore(s, nodes[nodes.length - 1]);
-    return s;
-},
-
 render: function(s, dirty)
 {
     if (dirty !== s.dirty)
     {
         s.style.backgroundColor = s.style.color = s.dirty = dirty ? 'white' : 'black';
     }
+},
+
+addRenderCount: function()
+{
+    var s = document.createElement('span');
+    var nodes = divRenderCount.childNodes;
+    divRenderCount.insertBefore(s, nodes[nodes.length - 1]);
+    return s;
 },
 
 renderCount: function(s, count)
@@ -431,29 +504,6 @@ renderOff: function()
     {
         var s = renders[i];
         s.style.backgroundColor = s.style.color = s.dirty = 'black';
-    }
-},
-
-meter: function(percent)
-{
-    c = divMeter.getContext('2d');
-    var data = c.getImageData(0, 0, 100, 25);
-    c.putImageData(data, -1, 0);
-    c.clearRect(99, 0, 99, 25);
-    var height, middle = 19;
-    if (percent < 0)
-    {
-        c.fillStyle = 'red';
-        percent = Math.abs(percent);
-        height = (25 - middle) * -percent;
-        c.fillRect(99, middle, 99, middle + height);
-
-    }
-    else
-    {
-        c.fillStyle = 'white';
-        height = middle * percent;
-        c.fillRect(99, height, 99, middle - height);
     }
 },
 
@@ -734,7 +784,7 @@ initPercentages: function()
 {
     percentages = add();
     percentages.innerHTML = '';
-    other = addPercentages('Other');
+    other = ercentages('Other');
 },
 
 addPercentages: function(name)
@@ -775,6 +825,8 @@ changePercent: function(name, percent)
 // exports
 var Debug = {
     add: add,
+    addMeter: addMeter,
+    meter: meter,
     init: init
 };
 
