@@ -7,20 +7,22 @@
 */
 
 var defaultDiv = null;
-var left = {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], isLeft: true};
-var right = {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], isLeft: false};
+var sides = {
+    'leftTop': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
+    'leftBottom': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
+    'rightTop': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
+    'rightBottom': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
+};
 
 function init()
 {
     add('debug', {size: 0.15, expandable: 0.5});
-    var fps = add('FPS', {text: '0 FPS'});
-    debugOne('10 FPS', {panel: fps});
     window.addEventListener('resize', resize);
     // window.addEventListener('error', error);
 }
 
 // options {}
-//  side: 'left' (default) or 'right'
+//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
 //  expandable: 0 (default) or percent size to expand
 //  default: if true then this panel becomes default for calls to debug and debugOne
 //  size: 0 (default) or percent size
@@ -34,31 +36,22 @@ function add(name, options)
     {
         defaultDiv = div;
     }
+    var side = sides[options.side || 'leftBottom'];
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
-    var side;
-    if (options.side === 'right')
+    if (isLeft(side))
     {
-        side = right;
-        s.right = 0;
-        if (!right.minimize)
-        {
-            minimizeCreate('right', false);
-        }
+        s.left = 0;
     }
     else
     {
-        side = left;
-        s.left = 0;
-        if (!left.minimize)
-        {
-            minimizeCreate('left', true);
-        }
+        s.right = 0;
     }
+    minimizeCreate(side);
     div.side = side;
     side.panels[name] = div;
-    style(div, options.side !== 'right');
+    style(div, side);
     div.click = handleClick;
     click(div);
     if (options.text)
@@ -152,7 +145,7 @@ function debugOne(text, options)
     div.scrollTop = 0;
 }
 
-function style(div, isLeft)
+function style(div, side)
 {
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
@@ -161,29 +154,30 @@ function style(div, isLeft)
     s.color = "white";
     s.margin = 0;
     s.padding = "0.5%";
-    s.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
+    s.boxShadow = (isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     s.cursor = 'pointer';
 }
 
-function minimizeCreate(isLeft)
+function minimizeCreate(side)
 {
-console.log('minimize')
+    if (side.minimize)
+    {
+        return;
+    }
     var div = document.createElement('div');
     div.options = {};
     document.body.appendChild(div);
-    var side = isLeft ? left : right;
     var s = div.style;
-    if (isLeft)
+    div.side = side;
+    if (isLeft(side))
     {
         s.left = 0;
-        div.side = left;
     }
     else
     {
         s.right = 0;
-        div.side = right;
     }
-    style(div, isLeft);
+    style(div, side);
     s.backgroundColor = 'transparent';
     s.boxShadow = null;
     s.padding = 0;
@@ -192,15 +186,17 @@ console.log('minimize')
     var count = document.createElement('span');
     minimize.click = handleMinimize;
     count.click = handleCount;
-    div.appendChild(minimize);
-    div.appendChild(count);
     if (isLeft)
     {
-        count.style.marginLeft = '50%';
+        div.appendChild(minimize);
+        div.appendChild(count);
+        count.style.marginLeft = '20px';
     }
     else
     {
-        count.style.marginRight = '50%';
+        div.appendChild(count);
+        div.appendChild(minimize);
+        count.style.marginRight = '20px';
     }
     count.style.background = minimize.style.background = "rgba(150,150,150,0.5)";
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
@@ -269,7 +265,14 @@ function resizeSide(side)
             var panel = side.panels[name];
             panel.style.display = 'none';
         }
-        side.minimize.style.bottom = window.innerHeight / 2 + 'px';
+        if (isBottom(side))
+        {
+            side.minimize.style.bottom = window.innerHeight / 4 + 'px';
+        }
+        else
+        {
+            side.minimize.style.top = window.innerHeight / 4 + 'px';
+        }
         side.count.style.display = 'none';
     }
     else
@@ -281,6 +284,7 @@ function resizeSide(side)
             var panel = side.panels[name];
             if (side.minimized.indexOf(panel) === -1)
             {
+                panel.style.display = 'block';
                 divs.push(panel);
             }
             else
@@ -295,7 +299,14 @@ function resizeSide(side)
         for (var i = 0; i < divs.length; i++)
         {
             var div = divs[i];
-            div.style.bottom = current + 'px';
+            if (isBottom(side))
+            {
+                div.style.bottom = current + 'px';
+            }
+            else
+            {
+                div.style.top = current + 'px';
+            }
             if (div.options.size)
             {
                 var size;
@@ -327,14 +338,27 @@ function resizeSide(side)
 
 function resize()
 {
-    if (left.minimize)
+    function side(dir)
     {
-        resizeSide(left);
+        if (sides[dir].minimize)
+        {
+            resizeSide(sides[dir]);
+        }
     }
-    if (right.minimize)
-    {
-        resizeSide(right);
-    }
+    side('leftBottom');
+    side('rightBottom');
+    side('leftTop');
+    side('rightTop');
+}
+
+function isLeft(side)
+{
+    return side.dir.indexOf('left') !== -1;
+}
+
+function isBottom(side)
+{
+    return side.dir.indexOf('Bottom') !== -1;
 }
 
 /*
