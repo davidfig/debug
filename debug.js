@@ -4,9 +4,7 @@
     Released under MIT license <https://github.com/davidfig/anglejs/license>
     Author: David Figatner
     Copyright (c) 2016 YOPEY YOPEY LLC
-*/
-
-(function(){
+*/ ;(function(){
 
 var defaultDiv = null;
 var sides = {
@@ -16,9 +14,19 @@ var sides = {
     'rightBottom': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
 };
 
-function init()
+// options for the default debug panel (see add())
+function init(options)
 {
-    add('debug', {size: 0.15, expandable: 0.5});
+    options = options || {};
+    if (!options.size)
+    {
+        options.size = 0.15;
+    }
+    if (!options.expandable)
+    {
+        options.expandable = 0.5;
+    }
+    add('debug', options);
     window.addEventListener('resize', resize);
     window.addEventListener('error', error);
     document.addEventListener('keypress', keypress);
@@ -107,11 +115,9 @@ function addMeter(name, options)
 }
 
 // adds a line to the end of the meter and scrolls the meter as necessary
-// percent: between -1 to +1
-// options {}
-//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
-//  width: defaults to 100px
-//  height: default to 25px
+//      percent: between -1 to +1
+//      name: name of panel
+//      panel: panel returned from Debug.Add()
 function meter(percent, options)
 {
     var div;
@@ -712,6 +718,4 @@ if (typeof window !== 'undefined')
     window.Debug = Debug;
     window.debug = debug;
     window.debugOne = debugOne;
-}
-
-})();
+} })();
