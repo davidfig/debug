@@ -4,9 +4,9 @@
             margin: 0;
         }
 
-        .title {
+        .content {
             text-align: center;
-            font-size: 200%;
+            font-size: 150%;
             position: absolute;
             left: 50%;
             top: 50;
@@ -30,5 +30,27 @@
         Debug.add('testing', {text: 'this is another panel.'});
         throw new Error(200, 'test error.');
     </script>
-    <div class="title">Example for <a href="https://github.com/davidfig/debug">davidfig/debug/</a></div>
+    <div class="title">
+        <div>Example for <a href="https://github.com/davidfig/debug">davidfig/debug/</a></div>
+        <code>
+    // initialize the library
+    Debug.init();
+
+    // send a message to the default panel created in the init()
+    debug('This is a test message.');
+
+    // add an FPS panel and meter
+    var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
+    var meter = Debug.addMeter('panel', {side: 'rightBottom'});
+
+    // update the FPS
+    setInterval(function () {
+        var FPS = Math.random() * 60;
+        Debug.meter(Math.random() * 2 - 1, {panel: meter});
+        debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
+    }, 60);
+
+    Debug.add('testing', {text: 'this is another panel.'});
+        </code>
+    </div>
 </body>
