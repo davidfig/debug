@@ -62,9 +62,9 @@ function add(name, options)
     }
     if (options.style)
     {
-        for (var name in options.style)
+        for (var key in options.style)
         {
-            s[name] = options.style[name];
+            s[key] = options.style[key];
         }
     }
     minimizeCreate(side);
@@ -158,6 +158,36 @@ function meter(percent, options)
     }
 }
 
+function getDiv(options)
+{
+    var div;
+    if (!options.panel && !options.name)
+    {
+        div = defaultDiv;
+    }
+    else
+    {
+        div = options.panel;
+        if (!div)
+        {
+            for (var name in sides)
+            {
+                var panel = sides[name].panels[options.name];
+                if (panel)
+                {
+                    div = panel;
+                    break;
+                }
+            }
+        }
+    }
+    if (!div)
+    {
+        div = defaultDiv;
+    }
+    return div;
+}
+
 // adds text to the end of in the panel and scrolls the panel
 // options:
 //      color: background color for text
@@ -165,16 +195,8 @@ function meter(percent, options)
 //      panel: panel returned from Debug.Add()
 function debug(text, options)
 {
-    var div;
+    var div = getDiv(options);
     options = options || {};
-    if (!options.panel && !options.name)
-    {
-        div = defaultDiv;
-    }
-    else
-    {
-        div = options.panel || left.panels[options.name] || right.panels[options.name];
-    }
     if (options.color)
     {
         div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
@@ -217,16 +239,8 @@ function debug(text, options)
 //      panel: panel returned from Debug.Add()
 function debugOne(text, options)
 {
-    var div;
+    var div = getDiv(options);
     options = options || {};
-    if (!options.panel && !options.name)
-    {
-        div = defaultDiv;
-    }
-    else
-    {
-        div = options.panel || left.panels[options.name] || right.panels[options.name];
-    }
     if (options.color)
     {
         div.style.backgroundColor = options.color;
@@ -633,6 +647,7 @@ var Debug = {
     addMeter: addMeter,
     meter: meter,
     get: get,
+    resize: resize,
     caller: caller
 };
 
