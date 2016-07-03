@@ -159,15 +159,17 @@ function debug(text, options)
     {
         div = options.panel || left.panels[options.name] || right.panels[options.name];
     }
-    var color = options.color || "transparent";
-    var error = false;
-    if (color === 'error')
+    if (options.color)
     {
-        error = true;
-        color = 'red';
+        div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
     }
+    else
+    {
+        div.style.backgroundColor = 'rgba(150,150,150,0.5)';
+    }
+    var error = false;
     var result = '';
-    result += '<span style="background: ' + color + '">';
+    result += '<span>';
     if (text === null)
     {
         result += 'null';
@@ -186,6 +188,7 @@ function debug(text, options)
     result += '</span>';
     div.innerHTML += result;
     div.scrollTop = div.scrollHeight;
+//    if (color === 'error' )
     // if (error && minimized)
     // {
     //     openMessageBox();
@@ -208,20 +211,27 @@ function debugOne(text, options)
     {
         div = options.panel || left.panels[options.name] || right.panels[options.name];
     }
-    color = options.color || "rgb(100,100,100)";
-    div.innerHTML = '<span style="background: ' + color + '">';
+    if (options.color)
+    {
+        div.style.backgroundColor = options.color;
+    }
+    else
+    {
+        div.style.backgroundColor = 'rgba(150,150,150,0.5)';
+    }
+    var html = '<span>';
     if (typeof text === 'object')
     {
         for (var i = 0, _i = text.length; i < _i; i++)
         {
-            div.innerHTML += text[i] + ((i !== _i -1) ? ', ' : '');
+            html += text[i] + ((i !== _i -1) ? ', ' : '');
         }
     }
     else
     {
-        div.innerHTML += text;
+        html += text;
     }
-    div.innerHTML += '</span>';
+    div.innerHTML = html + '</span>';
     div.scrollTop = 0;
 }
 
