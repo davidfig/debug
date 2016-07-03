@@ -56,19 +56,20 @@ Adds a meter panel
 updates the meter
 adds a line to the end of the meter and scrolls the meter as necessary
 * percent: between -1 to +1
-* name: name of panel
-* panel: panel returned from Debug.Add()
+* options {}
+  - name: name of panel
+  - panel: panel returned from Debug.Add()
 
 ###Debug.debug(text, options) or debug(text, options)
 adds text to the end of a panel and scrolls the panel
-* options:
+* options {}
   - color: background color for text
   - name: name of panel
   - panel: panel returned from Debug.Add()
 
 ###Debug.debugOne(text, options) or debugOne(text, options)
 replaces all text in the panel
-* options:
+* options {}
   - name: name of panel
   - panel: panel returned from Debug.Add()
 
