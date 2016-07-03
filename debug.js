@@ -195,8 +195,8 @@ function getDiv(options)
 //      panel: panel returned from Debug.Add()
 function debug(text, options)
 {
-    var div = getDiv(options);
     options = options || {};
+    var div = getDiv(options);
     if (options.color)
     {
         div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
@@ -239,8 +239,8 @@ function debug(text, options)
 //      panel: panel returned from Debug.Add()
 function debugOne(text, options)
 {
-    var div = getDiv(options);
     options = options || {};
+    var div = getDiv(options);
     if (options.color)
     {
         div.style.backgroundColor = options.color;
