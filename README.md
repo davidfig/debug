@@ -27,6 +27,9 @@ include debug.js in your project or add to your workflow
 
     <script src="debug.js"></script>
 
+## Example
+http://localhost:8001/gits/debug/index.html
+
 ## API Reference
 
 ### Debug.init(options)
