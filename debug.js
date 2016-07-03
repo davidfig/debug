@@ -207,7 +207,7 @@ function debug(text, options)
     }
     var error = false;
     var result = '';
-    result += '<p>';
+    result += '<p style="pointer-events: none">';
     if (text === null)
     {
         result += 'null';
@@ -249,7 +249,7 @@ function debugOne(text, options)
     {
         div.style.backgroundColor = 'rgba(150,150,150,0.5)';
     }
-    var html = '<span>';
+    var html = '<span style="pointer-events: none">';
     if (typeof text === 'object')
     {
         for (var i = 0, _i = text.length; i < _i; i++)
