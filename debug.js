@@ -235,6 +235,19 @@ function debugOne(text, options)
     div.scrollTop = 0;
 }
 
+// adds a debug message showing who called the function
+function caller()
+{
+    if (arguments.callee.caller)
+    {
+        debug('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString());
+    }
+    else
+    {
+        debug('Called by: top level');
+    }
+}
+
 function style(div, side)
 {
     var s = div.style;
@@ -620,12 +633,6 @@ changeState: function()
     resize();
 },
 
-caller: function()
-{
-    message(arguments.callee.caller.arguments.callee.caller.name + ': ' +
-        arguments.callee.caller.arguments.callee.caller.toString());
-},
-
 initPercentages: function()
 {
     percentages = add();
@@ -670,10 +677,11 @@ changePercent: function(name, percent)
 
 // exports
 var Debug = {
+    init: init,
     add: add,
     addMeter: addMeter,
     meter: meter,
-    init: init
+    caller: caller
 };
 
 // add support for AMD (Asynchronous Module Definition) libraries such as require.js.
