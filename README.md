@@ -29,51 +29,51 @@ include debug.js in your project or add to your workflow
 
 ## API Reference
 
-# Debug.init(options)
-// initializes Debug and creates default debug panel
-// options for the default panel (see Debug.add())
-// attaches to the following events:
-//      window.resize: resizes panels
-//      window.error: shows error in the default panel
-//      document.keypress: captures ` key to change size of default panel
+### Debug.init(options)
+initializes Debug and creates default debug panel
+options for the default panel (see Debug.add())
+attaches to the following events:
+     window.resize: resizes panels
+     window.error: shows error in the default panel
+     document.keypress: captures ` key to change size of default panel
 
-# Debug.add(name, options)
-// Adds a debug panel
-// options {}
-//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
-//  expandable: 0 (default) or percent size to expand
-//  default: if true then this panel becomes default for calls to debug and debugOne
-//  size: 0 (default) or percent size
+### Debug.add(name, options)
+Adds a debug panel
+options {}
+ side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+ expandable: 0 (default) or percent size to expand
+ default: if true then this panel becomes default for calls to debug and debugOne
+ size: 0 (default) or percent size
 
-#Debug.addMeter(name, options)
-// Adds a meter panel
-// options {}
-//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
-//  width: defaults to 100px
-//  height: default to 25px
+###Debug.addMeter(name, options)
+Adds a meter panel
+options {}
+ side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+ width: defaults to 100px
+ height: default to 25px
 
-#Debug.meter(percent, options)
-// updates the meter
-// adds a line to the end of the meter and scrolls the meter as necessary
-//      percent: between -1 to +1
-//      name: name of panel
-//      panel: panel returned from Debug.Add()
+###Debug.meter(percent, options)
+updates the meter
+adds a line to the end of the meter and scrolls the meter as necessary
+     percent: between -1 to +1
+     name: name of panel
+     panel: panel returned from Debug.Add()
 
-#Debug.debug(text, options) or debug(text, options)
-// adds text to the end of a panel and scrolls the panel
-// options:
-//      color: background color for text
-//      name: name of panel
-//      panel: panel returned from Debug.Add()
+###Debug.debug(text, options) or debug(text, options)
+adds text to the end of a panel and scrolls the panel
+options:
+     color: background color for text
+     name: name of panel
+     panel: panel returned from Debug.Add()
 
-#Debug.debugOne(text, options) or debugOne(text, options)
-// replaces all text in the panel
-// options:
-//      name: name of panel
-//      panel: panel returned from Debug.Add()
+###Debug.debugOne(text, options) or debugOne(text, options)
+replaces all text in the panel
+options:
+     name: name of panel
+     panel: panel returned from Debug.Add()
 
-#Debug.caller(options)
-// adds a debug message showing who called the function
+###Debug.caller(options)
+adds a debug message showing who called the function
 
 ## License
 MIT License (MIT)
