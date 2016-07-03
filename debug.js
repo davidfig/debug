@@ -19,6 +19,7 @@ function init()
     add('debug', {size: 0.15, expandable: 0.5});
     window.addEventListener('resize', resize);
     // window.addEventListener('error', error);
+    document.addEventListener('keypress', keypress);
 }
 
 // options {}
@@ -103,6 +104,12 @@ function addMeter(name, options)
     return div;
 }
 
+// adds a line to the end of the meter and scrolls the meter as necessary
+// percent: between -1 to +1
+// options {}
+//  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
+//  width: defaults to 100px
+//  height: default to 25px
 function meter(percent, options)
 {
     var div;
@@ -434,6 +441,16 @@ function isBottom(side)
     return side.dir.indexOf('Bottom') !== -1;
 }
 
+// Captures ` key to expand default debug box
+function keypress(e)
+{
+    var code = (typeof e.which === "number") ? e.which : e.keyCode;
+    if (code === 96)
+    {
+        handleClick({currentTarget: defaultDiv});
+    }
+}
+
 /*
 fps: function(fps)
 {
@@ -507,178 +524,6 @@ renderOff: function()
     }
 },
 
-resize: function()
-{
-    var max = Math.min(window.innerWidth, window.innerHeight);
-    var size = max * (minimized ? 0.15 : 0.6);
-    div.style.width = div.style.height = size + "px";
-    div.style.fontSize = (minimized ? "5%" : "100%");
-    var divs = [
-        divFPS,
-        divRender,
-        divRenderCount,
-        divAnimate,
-        divMeter
-    ];
-    for (var i = 0; i < extras.length; i++)
-    {
-        divs.push(extras[i]);
-    }
-    divs.push(divMinimize);
-    var current = div.offsetHeight;
-    for (var i = 0; i < divs.length; i++)
-    {
-        if (divs[i].style.display === 'block')
-        {
-            divs[i].style.bottom = current + 10 + 'px';
-            current += 10 + divs[i].offsetHeight;
-        }
-    }
-    div.scrollTop = div.scrollHeight;
-},
-
-styleDebug: function()
-{
-    var s = div.style;
-    s.fontFamily = "Helvectica Neue";
-    s.position = "fixed";
-    if (leftRight === 'right')
-    {
-        s.right = 0;
-    }
-    else {
-        s.left = 0;
-    }
-    s.bottom = 0;
-    s.background = "rgba(100,100,100,0.75)";
-    s.color = "white";
-    s.padding = "10px";
-    s.paddingTop = "5px";
-    s.overflow = "auto";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-},
-
-styleFPS: function()
-{
-    var s = divFPS.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
-    if (leftRight === 'right')
-    {
-        s.right = 0;
-    }
-    else {
-        s.left = 0;
-    }
-    s.background = "rgba(150,150,150,0.75)";
-    s.color = "white";
-    s.padding = "5px";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-    divFPS.innerHTML = "-- FPS";
-},
-
-styleRender: function()
-{
-    var s = divRender.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
-    if (leftRight === 'right') s.right = 0;
-    else s.left = 0;
-    s.background = "rgba(150,150,150,0.75)";
-    s.color = "white";
-    s.padding = "5px";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-},
-
-styleRenderCount: function()
-{
-    var s = divRenderCount.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
-    if (leftRight === 'right')
-    {
-        s.right = 0;
-    }
-    else
-    {
-        s.left = 0;
-    }
-    s.background = "rgba(150,150,150,0.75)";
-    s.color = "white";
-    s.padding = "5px";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-    divRenderCount.innerHTML = '<span> objects</span>';
-},
-
-styleAnimate: function()
-{
-    var s = divAnimate.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
-    if (leftRight === 'right')
-    {
-        s.right = 0;
-    }
-    else {
-        s.left = 0;
-    }
-    s.background = "rgba(150,150,150,0.75)";
-    s.color = "white";
-    s.padding = "5px";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-    divAnimate.innerHTML = "0 Playing";
-},
-
-styleMeter: function()
-{
-    var s = divMeter.style;
-    s.position = "fixed";
-    if (leftRight === 'right')
-    {
-        s.right = 0;
-    }
-    else {
-        s.left = 0;
-    }
-    s.background = "rgba(150,150,150,0.75)";
-    s.padding = "5px";
-    s.boxShadow = "-5px -5px 10px rgba(0,0,0,0.25)";
-    divMeter.width = 100;
-    divMeter.height = 25;
-},
-
-divCreate: function()
-{
-    div = document.createElement('div');
-    div.draggable = true;
-    document.body.appendChild(div);
-    divFPS = document.createElement('div');
-    document.body.appendChild(divFPS);
-    divRender = document.createElement('div');
-    document.body.appendChild(divRender);
-    divRenderCount = document.createElement('div');
-    document.body.appendChild(divRenderCount);
-    divAnimate = document.createElement('div');
-    document.body.appendChild(divAnimate);
-    divMeter = document.createElement('canvas');
-    document.body.appendChild(divMeter);
-    divMinimize = document.createElement('div');
-    document.body.appendChild(divMinimize);
-    div.style.zIndex = divFPS.style.zIndex = divRender.style.zIndex = divAnimate.style.zIndex = divMeter.style.zIndex = divRenderCount.style.zIndex = divMinimize.style.zIndex = 100;
-},
-
-listener: function()
-{
-    div.addEventListener('click', handleClick);
-    div.addEventListener('touchend', handleClick);
-    div.style.pointerEvents = 'auto';
-    divMinimize.addEventListener('click', handleState);
-    divMinimize.addEventListener('touchend', handleState);
-    divMinimize.style.pointerEvents = 'auto';
-    window.addEventListener('error', error);
-    window.addEventListener('resize', resize);
-    document.addEventListener('keypress', keypress);
-},
 
 handleState: function()
 {
@@ -713,15 +558,6 @@ error: function(e)
     error = e.error ? e.error.message : e.message;
 
     message(error + " at " + e.filename + " line " + e.lineno, "error");
-},
-
-// Captures ` key to expand debug box
-keypress: function(e) {
-    var code = (typeof e.which === "number") ? e.which : e.keyCode;
-    if (code === 96)
-    {
-        handleClick();
-    }
 },
 
 changeState: function()

@@ -10,13 +10,13 @@
     <script>
         Debug.init();
         var fps = add('FPS', {text: '0 FPS', side: 'rightBottom'});
-        debugOne('10 FPS', {panel: fps});
         // debug('testing . . . ')
         Debug.add('counter', {text: '0 items', side: 'leftTop'});
-        var meter = Debug.addMeter('panel', {side: 'rightTop'});
-        for (var i = 0; i < 500; i++)
-        {
-            Debug.meter(Math.random() * 2 - 1, {panel: meter})
-        }
+        var meter = Debug.addMeter('panel', {side: 'rightBottom'});
+        setInterval(function () {
+            var FPS = Math.random() * 60;
+            Debug.meter(Math.random() * 2 - 1, {panel: meter});
+            debugOne(Math.round(FPS) + ' FPS', {panel: fps});
+        }, 60);
     </script
 </body>
