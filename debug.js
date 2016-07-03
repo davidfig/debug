@@ -18,7 +18,7 @@ function init()
 {
     add('debug', {size: 0.15, expandable: 0.5});
     window.addEventListener('resize', resize);
-    // window.addEventListener('error', error);
+    window.addEventListener('error', error);
     document.addEventListener('keypress', keypress);
 }
 
@@ -169,7 +169,7 @@ function debug(text, options)
     }
     var error = false;
     var result = '';
-    result += '<span>';
+    result += '<p>';
     if (text === null)
     {
         result += 'null';
@@ -185,14 +185,14 @@ function debug(text, options)
     {
         result += text;
     }
-    result += '</span>';
+    result += '</p>';
     div.innerHTML += result;
     div.scrollTop = div.scrollHeight;
-//    if (color === 'error' )
-    // if (error && minimized)
-    // {
-    //     openMessageBox();
-    // }
+    if (options.color === 'error')
+    {
+        defaultDiv.expanded = true;
+        resize();
+    }
 }
 
 // replaces all text in the panel
@@ -256,9 +256,10 @@ function style(div, side)
     s.background = "rgba(150,150,150,0.5)";
     s.color = "white";
     s.margin = 0;
-    s.padding = "0.5%";
+    s.padding = "5px";
     s.boxShadow = (isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     s.cursor = 'pointer';
+    s.wordWrap = 'break-word';
 }
 
 function minimizeCreate(side)
@@ -474,6 +475,12 @@ function keypress(e)
     }
 }
 
+function error(e)
+{
+    console.log(e);
+    debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + " at " + e.filename + " line " + e.lineno, {color: "error"});
+}
+
 /*
 fps: function(fps)
 {
@@ -573,14 +580,6 @@ handleClick: function()
     }
     minimized = !minimized;
     changeState();
-},
-
-error: function(e)
-{
-    console.log(e);
-    error = e.error ? e.error.message : e.message;
-
-    message(error + " at " + e.filename + " line " + e.lineno, "error");
 },
 
 changeState: function()

@@ -19,5 +19,6 @@
             debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
         }, 60);
         Debug.caller();
+        throw new Error(200, 'test error.');    
     </script
 </body>
