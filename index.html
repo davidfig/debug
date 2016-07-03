@@ -3,6 +3,14 @@
         body {
             margin: 0;
         }
+
+        .title {
+            text-align: center;
+            font-size: 200%;
+            position: absolute;
+            left: 50%;
+            top: 50;
+        }
     </style>
     <script src="debug.js"></script>
 </head>
@@ -10,7 +18,6 @@
     <script>
         Debug.init();
         var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
-        // debug('testing . . . ')
         Debug.add('counter', {text: '0 items', side: 'leftTop'});
         var meter = Debug.addMeter('panel', {side: 'rightBottom'});
         setInterval(function () {
@@ -22,5 +29,6 @@
         debug('This error is for testing:');
         Debug.add('testing', {text: 'this is another panel.'});
         throw new Error(200, 'test error.');
-    </script
+    </script>
+    <div class="title">Example for <a href="https://github.com/davidfig/debug">davidfig/debug/</a></div>
 </body>
