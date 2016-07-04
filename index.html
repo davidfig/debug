@@ -1,27 +1,45 @@
 <head>
+    <script src="https://rawgit.com/pixijs/pixi.js/dev/bin/pixi.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/ascetic.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script>
+    <script src="debug.js"></script>
     <style>
         body {
             margin: 0;
+            padding: 0
         }
-
-        .code {
-            font-size: 100%;
+        .title {
+            margin-top: 1%;
+            margin-left: 15%;
+            font-size: 200%;
+        }
+        #code {
+            left: 15%;
             position: absolute;
-            left: 25%;
-            top: 50;
+            word-wrap: break-word;
+            z-index: -1;
         }
     </style>
-    <script src="debug.js"></script>
 </head>
 <body>
-    <script>
+    <div class="title">Example for <a href="https://github.com/davidfig/debug/">github.com/davidfig/debug/</a></div>
+    <pre><code class="javascript" id="code"></code></pre>
+    <script id="sample">
+
         Debug.init();
 
+        // adds a debug message on the default debug panel
         debug('This is a test message.');
 
         // add an FPS panel and meter
-        var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
-        var meter = Debug.addMeter('panel', {side: 'rightBottom'});
+        var fps = Debug.add('FPS', {text: '0 FPS'});
+        var meter = Debug.addMeter('panel');
+
+        // adds another panel to the top right
+        Debug.add('testing', {text: 'this is another panel.', side: 'rightTop'});
+
+        var lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
+        debug('Try pressing on a panel or the minimize "-" button near a panel set', {panel: lower});
 
         // update the FPS
         setInterval(function () {
@@ -30,31 +48,14 @@
             debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
         }, 60);
 
-        Debug.add('testing', {text: 'this is another panel.'});
     </script>
-    <div class="code">
-        <div>
-            <div style="font-size: 130%">Example for <a href="https://github.com/davidfig/debug">github.com/davidfig/debug/</a></div>
-<!-- HTML generated using hilite.me -->
-<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
-    <pre style="margin: 0; line-height: 125%">    <span style="color: #888888">// initialize the library</span>
-    Debug.init();
-
-    <span style="color: #888888">// send a message to the default panel created in the init()</span>
-    debug(<span style="background-color: #fff0f0">&#39;This is a test message.&#39;</span>);
-
-    <span style="color: #888888">// add an FPS panel and meter</span>
-    <span style="color: #008800; font-weight: bold">var</span> fps <span style="color: #333333">=</span> Debug.add(<span style="background-color: #fff0f0">&#39;FPS&#39;</span>, {text<span style="color: #333333">:</span> <span style="background-color: #fff0f0">&#39;0 FPS&#39;</span>, side<span style="color: #333333">:</span> <span style="background-color: #fff0f0">&#39;rightBottom&#39;</span>});
-    <span style="color: #008800; font-weight: bold">var</span> meter <span style="color: #333333">=</span> Debug.addMeter(<span style="background-color: #fff0f0">&#39;panel&#39;</span>, {side<span style="color: #333333">:</span> <span style="background-color: #fff0f0">&#39;rightBottom&#39;</span>});
-
-    <span style="color: #888888">// update the FPS</span>
-    setInterval(<span style="color: #008800; font-weight: bold">function</span> () {
-        <span style="color: #008800; font-weight: bold">var</span> FPS <span style="color: #333333">=</span> <span style="color: #007020">Math</span>.random() <span style="color: #333333">*</span> <span style="color: #0000DD; font-weight: bold">60</span>;
-        Debug.meter(<span style="color: #007020">Math</span>.random() <span style="color: #333333">*</span> <span style="color: #0000DD; font-weight: bold">2</span> <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>, {panel<span style="color: #333333">:</span> meter});
-        debugOne(<span style="color: #007020">Math</span>.round(FPS) <span style="color: #333333">+</span> <span style="background-color: #fff0f0">&#39; FPS&#39;</span>, {panel<span style="color: #333333">:</span> fps, color<span style="color: #333333">:</span> (FPS <span style="color: #333333">&lt;</span> <span style="color: #0000DD; font-weight: bold">30</span> <span style="color: #333333">?</span> <span style="background-color: #fff0f0">&#39;red&#39;</span> <span style="color: #333333">:</span> <span style="color: #008800; font-weight: bold">null</span>)});
-    }, <span style="color: #0000DD; font-weight: bold">60</span>);
-
-    Debug.add(<span style="background-color: #fff0f0">&#39;testing&#39;</span>, {text<span style="color: #333333">:</span> <span style="background-color: #fff0f0">&#39;this is another panel.&#39;</span>});
-</pre></div></div>
-    </div>
+    <script>
+        window.onload = function()
+        {
+            var code = document.getElementById('code');
+            var script = document.getElementById('sample');
+            code.innerHTML = script.innerHTML;
+            hljs.highlightBlock(code);
+        };
+    </script>
 </body>
