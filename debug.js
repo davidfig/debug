@@ -20,7 +20,7 @@ function init(options)
     options = options || {};
     if (!options.size)
     {
-        options.size = 0.15;
+        options.size = 0.25;
     }
     if (!options.expandable)
     {
