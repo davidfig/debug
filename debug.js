@@ -32,6 +32,36 @@ function init(options)
     document.addEventListener('keypress', keypress);
 }
 
+// converts side
+function getSide(side)
+{
+    if (!side)
+    {
+        return sides['rightBottom'];
+    }
+    var change = side.toUpperCase();
+    if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
+    {
+        return sides['leftBottom'];
+    }
+    else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
+    {
+        return sides['rightBottom'];
+    }
+    else if (change === 'LEFTTOP' || change === 'TOPLEFT')
+    {
+        return sides['leftTop'];
+    }
+    else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
+    {
+        return sides['rightTop'];
+    }
+    else
+    {
+        return sides['rightBottom'];
+    }
+}
+
 // options {}
 //  side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
 //  expandable: 0 (default) or percent size to expand
@@ -48,7 +78,7 @@ function add(name, options)
     {
         defaultDiv = div;
     }
-    var side = sides[options.side || 'rightBottom'];
+    var side = getSide(options.side);
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
@@ -96,7 +126,7 @@ function addMeter(name, options)
     div.style.height = div.height + 'px';
     document.body.appendChild(div);
     div.options = options;
-    var side = sides[options.side || 'rightBottom'];
+    var side = getSide(options.side);
     var s = div.style;
     s.fontFamily = "Helvetica Neue";
     s.position = "fixed";
@@ -207,7 +237,7 @@ function debug(text, options)
     }
     var error = false;
     var result = '';
-    result += '<p>';
+    result += '<p style="pointer-events: none">';
     if (text === null)
     {
         result += 'null';
@@ -249,7 +279,7 @@ function debugOne(text, options)
     {
         div.style.backgroundColor = 'rgba(150,150,150,0.5)';
     }
-    var html = '<span>';
+    var html = '<span style="pointer-events: none">';
     if (typeof text === 'object')
     {
         for (var i = 0, _i = text.length; i < _i; i++)
