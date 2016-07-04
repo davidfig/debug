@@ -709,4 +709,4 @@ if (typeof window !== 'undefined')
     window.Debug = Debug;
     window.debug = debug;
     window.debugOne = debugOne;
-} })();
+}  })();
