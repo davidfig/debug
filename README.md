@@ -22,13 +22,13 @@ debug panels for javascript apps (particularly useful for game development)
 
     Debug.add('testing', {text: 'this is another panel.'});
 
+## Live Example
+https://davidfig.github.io/debug/
+
 ## Installation
 include debug.js in your project or add to your workflow
 
     <script src="debug.js"></script>
-
-## Example
-https://davidfig.github.io/debug/
 
 ## API Reference
 
