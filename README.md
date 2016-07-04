@@ -25,6 +25,13 @@ debug panels for javascript apps (particularly useful for game development)
 ## Live Example
 https://davidfig.github.io/debug/
 
+see also
+
+* https://davidfig.github.io/debug/
+* https://davidfig.github.io/update/
+* https://davidfig.github.io/renderer/
+* https://davidfig.github.io/viewport/
+
 ## Installation
 include debug.js in your project or add to your workflow
 
