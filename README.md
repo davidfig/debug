@@ -27,8 +27,8 @@ https://davidfig.github.io/debug/
 
 see also
 
-* https://davidfig.github.io/debug/
 * https://davidfig.github.io/update/
+* https://davidfig.github.io/animate/
 * https://davidfig.github.io/renderer/
 * https://davidfig.github.io/viewport/
 
