@@ -236,8 +236,7 @@ function debug(text, options)
         div.style.backgroundColor = 'rgba(150,150,150,0.5)';
     }
     var error = false;
-    var result = '';
-    result += '<p style="pointer-events: none">';
+    var result = '<p style="pointer-events: none">';
     if (text === null)
     {
         result += 'null';
@@ -333,6 +332,7 @@ function style(div, side)
     s.boxShadow = (isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     s.cursor = 'pointer';
     s.wordWrap = 'break-word';
+    s.overflow = 'auto';
     s.zIndex = 1000;
 }
 
@@ -554,122 +554,6 @@ function error(e)
     console.log(e);
     debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + " at " + e.filename + " line " + e.lineno, {color: "error"});
 }
-
-/*
-
-animate: function(amount)
-{
-    divAnimate.innerHTML = amount + ' playing';
-},
-
-// Adds a render light and object counter for the renderer
-// @return {object} returns the div to be passed to the render() function
-addRender: function()
-{
-    var s = document.createElement('span');
-    s.innerHTML = 'x';
-    s.style.marginRight = '1px';
-    s.style.backgroundColor = 'black';
-    s.style.color = 'black';
-    divRender.appendChild(s);
-    s.dirty = 'black';
-    renders.push(s);
-    var count = addRenderCount();
-    resize();
-    return [s, count];
-},
-
-render: function(s, dirty)
-{
-    if (dirty !== s.dirty)
-    {
-        s.style.backgroundColor = s.style.color = s.dirty = dirty ? 'white' : 'black';
-    }
-},
-
-addRenderCount: function()
-{
-    var s = document.createElement('span');
-    var nodes = divRenderCount.childNodes;
-    divRenderCount.insertBefore(s, nodes[nodes.length - 1]);
-    return s;
-},
-
-renderCount: function(s, count)
-{
-    s.innerHTML = count + ' ';
-},
-
-// Turns off all render lights
-renderOff: function()
-{
-    for (var i = 0, _i = renders.length; i < _i; i++)
-    {
-        var s = renders[i];
-        s.style.backgroundColor = s.style.color = s.dirty = 'black';
-    }
-},
-
-
-handleState: function()
-{
-    switch (state)
-    {
-        case '0':
-            state = '1';
-        break;
-        case '1':
-            state = '2';
-        break;
-        case '2':
-            state = '0';
-    }
-    window.localStorage.setItem('state', state);
-    changeState();
-},
-
-
-initPercentages: function()
-{
-    percentages = add();
-    percentages.innerHTML = '';
-    other = ercentages('Other');
-},
-
-addPercentages: function(name)
-{
-    var div = document.createElement('div');
-    percentages.insertBefore(div, percentages.firstChild);
-    var nameSpan = document.createElement('span');
-    div.appendChild(nameSpan);
-    nameSpan.innerHTML = name + ': ';
-    var amount = document.createElement('span');
-    div.appendChild(amount);
-    amount.innerHTML = '--';
-    var percent = document.createElement('span');
-    div.appendChild(percent);
-    percent.innerHTML = '%';
-    percentageList[name] = {span: amount, current: 0, amounts: []};
-    resize();
-},
-
-changePercent: function(name, percent)
-{
-    var change = percentageList[name];
-    change.amounts[change.current++] = percent;
-    if (change.current === rollingAverage)
-    {
-        change.current = 0;
-    }
-    var total = 0;
-    for (var i = 0; i < change.amounts.length; i++)
-    {
-        total += change.amounts[i];
-    }
-    change.span.innerHTML = Math.round(total / change.amounts.length);
-}
-
-*/
 
 // exports
 var Debug = {
