@@ -1,10 +1,8 @@
-/*
-    Debug panels for javascript
-    debug.js <https://github.com/davidfig/debug>
-    Released under MIT license <https://github.com/davidfig/anglejs/license>
-    Author: David Figatner
-    Copyright (c) 2016 YOPEY YOPEY LLC
-*/
+// Debug panels for javascript
+// debug.js <https://github.com/davidfig/debug>
+// Released under MIT license <https://github.com/davidfig/anglejs/license>
+// Author: David Figatner
+// Copyright (c) 2016 YOPEY YOPEY LLC
 
 var defaultDiv = null;
 var sides = {
