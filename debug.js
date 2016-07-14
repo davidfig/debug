@@ -4,7 +4,7 @@
     Released under MIT license <https://github.com/davidfig/anglejs/license>
     Author: David Figatner
     Copyright (c) 2016 YOPEY YOPEY LLC
-*/ ;(function(){
+*/
 
 var defaultDiv = null;
 var sides = {
@@ -709,4 +709,4 @@ if (typeof window !== 'undefined')
     window.Debug = Debug;
     window.debug = debug;
     window.debugOne = debugOne;
-}  })();
+}
