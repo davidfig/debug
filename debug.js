@@ -580,9 +580,9 @@ if (typeof define === 'function' && define.amd)
 // add support for CommonJS libraries such as browserify.
 if (typeof exports !== 'undefined')
 {
-    exports.Debug = Debug;
-    exports.debug = debug;
-    exports.debugOne = debugOne;
+    module.exports = Debug;
+    window.debug = debug;
+    window.debugOne = debugOne;
 }
 
 // define globally in case AMD is not available or available but not used
