@@ -1,6 +1,6 @@
 // Debug panels for javascript
 // debug.js <https://github.com/davidfig/debug>
-// Released under MIT license <https://github.com/davidfig/anglejs/license>
+// Released under MIT license <https://github.com/davidfig/debug/license>
 // Author: David Figatner
 // Copyright (c) 2016 YOPEY YOPEY LLC
 
@@ -376,7 +376,6 @@ function minimizeCreate(side)
     }
     count.style.background = minimize.style.background = "rgba(150,150,150,0.5)";
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
-    count.style.padding = minimize.style.padding = '5px';
     minimize.innerHTML = "&mdash;";
     count.style.display = 'none';
     minimize.style
