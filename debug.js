@@ -26,7 +26,7 @@ function init(options)
     }
     add('debug', options);
     window.addEventListener('resize', resize);
-    window.addEventListener('error', error);
+    // window.addEventListener('error', error);
     document.addEventListener('keypress', keypress);
 }
 
