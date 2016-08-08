@@ -6,27 +6,22 @@
 
 var defaultDiv = null;
 var sides = {
-    'leftTop': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
-    'leftBottom': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
-    'rightTop': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
-    'rightBottom': {isMinimized: false, minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
+    'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
+    'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
+    'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
+    'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
 };
+var initial;
 
 // options for the default debug panel (see add())
 function init(options)
 {
     options = options || {};
-    if (!options.size)
-    {
-        options.size = 0.25;
-    }
-    if (!options.expandable)
-    {
-        options.expandable = 0.5;
-    }
+    options.size = options.size || 0.25;
+    options.expandable = options.expandable || 0.5;
     add('debug', options);
     window.addEventListener('resize', resize);
-    // window.addEventListener('error', error);
+    window.addEventListener('error', error);
     document.addEventListener('keypress', keypress);
 }
 
@@ -71,6 +66,7 @@ function add(name, options)
     options = options || {};
     var div = document.createElement('div');
     document.body.appendChild(div);
+    div.name = name;
     div.options = options;
     if (!defaultDiv || options.default)
     {
@@ -105,6 +101,10 @@ function add(name, options)
     {
         div.innerHTML = options.text;
     }
+    if (localStorage.getItem(side.dir + '-' + name) === 'true')
+    {
+        side.minimized.push(div);
+    }
     resize();
     return div;
 }
@@ -123,6 +123,7 @@ function addMeter(name, options)
     div.style.width = div.width + 'px';
     div.style.height = div.height + 'px';
     document.body.appendChild(div);
+    div.name = name;
     div.options = options;
     var side = getSide(options.side);
     var s = div.style;
@@ -376,7 +377,7 @@ function minimizeCreate(side)
     }
     count.style.background = minimize.style.background = "rgba(150,150,150,0.5)";
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
-    minimize.innerHTML = "&mdash;";
+    minimize.innerHTML = side.isMinimized ? '+' : "&mdash;";
     count.style.display = 'none';
     minimize.style
     side.count = count;
@@ -398,6 +399,7 @@ function handleMinimize(e)
     var div = e.currentTarget;
     var side = e.currentTarget.offsetParent.side;
     side.isMinimized = !side.isMinimized;
+    window.localStorage.setItem(side.dir, side.isMinimized);
     div.innerHTML = side.isMinimized ? "+" : '&mdash;';
     resize();
 }
@@ -422,10 +424,12 @@ function handleClick(e)
         if (index === -1)
         {
             div.side.minimized.push(div);
+            localStorage.setItem(div.side.dir + '-' + div.name, 'true');
         }
         else
         {
             div.side.minimized.splice(index, 1);
+            localStorage.setItem(div.side.dir + '-' + div.name, 'false');
         }
     }
     resize();
