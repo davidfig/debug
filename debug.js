@@ -61,6 +61,7 @@ function getSide(side)
 //  default: if true then this panel becomes default for calls to debug and debugOne
 //  size: 0 (default) or percent size
 //  style: object with CSS styles for the panel
+//  text: starting text
 function add(name, options)
 {
     options = options || {};
@@ -74,8 +75,8 @@ function add(name, options)
     }
     var side = getSide(options.side);
     var s = div.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
+    s.fontFamily = 'Helvetica Neue';
+    s.position = 'fixed';
     if (isLeft(side))
     {
         s.left = 0;
@@ -379,7 +380,6 @@ function minimizeCreate(side)
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     minimize.innerHTML = side.isMinimized ? '+' : "&mdash;";
     count.style.display = 'none';
-    minimize.style
     side.count = count;
     click(side.count, isLeft);
     click(minimize, isLeft);
@@ -407,7 +407,8 @@ function handleMinimize(e)
 function handleCount(e)
 {
     var side = e.currentTarget.offsetParent.side;
-    side.minimized.pop();
+    var div = side.minimized.pop();
+    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
     resize();
 }
 
@@ -552,7 +553,7 @@ function keypress(e)
 
 function error(e)
 {
-    console.log(e);
+    console.error(e);
     debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + " at " + e.filename + " line " + e.lineno, {color: "error"});
 }
 
