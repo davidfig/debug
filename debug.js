@@ -13,12 +13,16 @@ var sides = {
 };
 var initial;
 
+var padding = 7;
+
 // options for the default debug panel (see add())
+//  padding {number} between parent panels
 function init(options)
 {
     options = options || {};
     options.size = options.size || 0.25;
     options.expandable = options.expandable || 0.5;
+    padding = options.panel || padding;
     add('debug', options);
     window.addEventListener('resize', resize);
     window.addEventListener('error', error);
@@ -26,8 +30,13 @@ function init(options)
 }
 
 // converts side
-function getSide(side)
+function getSide(options)
 {
+    if (options.parent)
+    {
+        return options.parent.side;
+    }
+    var side = options.side;
     if (!side)
     {
         return sides['rightBottom'];
@@ -73,7 +82,7 @@ function add(name, options)
     {
         defaultDiv = div;
     }
-    var side = getSide(options.side);
+    var side = getSide(options);
     var s = div.style;
     s.fontFamily = 'Helvetica Neue';
     s.position = 'fixed';
@@ -126,7 +135,7 @@ function addMeter(name, options)
     document.body.appendChild(div);
     div.name = name;
     div.options = options;
-    var side = getSide(options.side);
+    var side = getSide(options);
     var s = div.style;
     s.fontFamily = 'Helvetica Neue';
     s.position = 'fixed';
@@ -203,7 +212,7 @@ function addLink(name, link, options)
     div.name = name;
     div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
     div.options = options;
-    var side = getSide(options.side);
+    var side = getSide(options);
     var s = div.style;
     s.fontFamily = 'Helvetica Neue';
     s.position = 'fixed';
@@ -527,30 +536,55 @@ function resizeSide(side)
         for (var i = 0; i < divs.length; i++)
         {
             var div = divs[i];
-            if (isBottom(side))
+            if (div.options.parent && (side.minimized.indexOf(div.options.parent) === -1))
             {
-                div.style.bottom = current + 'px';
-            }
-            else
-            {
-                div.style.top = current + 'px';
-            }
-            if (div.options.size)
-            {
-                var size;
-                if (div.options.expandable)
+                var parent = div.options.parent;
+                div.style.top = parent.style.top;
+                div.style.bottom = parent.style.bottom;
+                if (isLeft(parent.side))
                 {
-                    size = max * (div.expanded ? div.options.expandable : div.options.size);
+                    div.style.left = (parent.offsetLeft + parent.offsetWidth + padding) + 'px';
                 }
                 else
                 {
-                    size = max * div.options.size;
+                    div.style.right = (window.innerWidth - parent.offsetLeft + padding) + 'px';
                 }
-                div.style.width = div.style.height = size + 'px';
-                div.style.display = 'block';
             }
-            div.scrollTop = div.scrollHeight;
-            current += 10 + div.offsetHeight;
+            else
+            {
+                if (isBottom(side))
+                {
+                    div.style.bottom = current + 'px';
+                }
+                else
+                {
+                    div.style.top = current + 'px';
+                }
+                if (isLeft(side))
+                {
+                    div.style.left = '0px';
+                }
+                else
+                {
+                    div.style.right = '0px';
+                }
+                if (div.options.size)
+                {
+                    var size;
+                    if (div.options.expandable)
+                    {
+                        size = max * (div.expanded ? div.options.expandable : div.options.size);
+                    }
+                    else
+                    {
+                        size = max * div.options.size;
+                    }
+                    div.style.width = div.style.height = size + 'px';
+                    div.style.display = 'block';
+                }
+                div.scrollTop = div.scrollHeight;
+                current += 10 + div.offsetHeight;
+            }
         }
         if (count === 0)
         {
