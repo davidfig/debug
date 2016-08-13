@@ -35,6 +35,7 @@
 
         // adds a debug message on the default debug panel
         debug('This is a test message.');
+        debug('This is a list', 'of messages', 'in one debug statement', 'useful for varibles', {color: 'green'});
 
         // add an FPS panel and meter
         var fps = Debug.add('FPS', {text: '0 FPS'});
@@ -50,7 +51,9 @@
         Debug.addLink('issues', 'htps://github.com/davidfig/debug/issues', {parent: link});
 
         var lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
-        debug('Try pressing on a panel or the minimize "-" button near a panel set', {panel: lower});
+
+        // this will erase the previous message
+        debugOne('Try pressing on a panel', 'or the minimize "-" button near a panel set', {panel: lower});
 
         var text1 = Debug.add('text1', {text: 'text', side: 'leftBottom'});
         var text2 = Debug.add('text2', {text: 'text-2', parent: text1});
