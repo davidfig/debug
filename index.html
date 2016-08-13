@@ -2,7 +2,12 @@
     <script src="https://rawgit.com/pixijs/pixi.js/dev/bin/pixi.js"></script>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/ascetic.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script>
-    <script src="debug.js"></script>
+
+    <!--<script src="https://rawgit.com/davidfig/debug/master/debug.js"></script>-->
+
+    <!--for testing purposes-->
+    <script src="../debug/debug.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -37,6 +42,9 @@
 
         // adds another panel to the top right
         Debug.add('testing', {text: 'this is another panel.', side: 'rightTop'});
+
+        // add a link to top right
+        Debug.addLink('github', 'https://github.com/davidfig/debug', {side: 'rightTop'});
 
         var lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
         debug('Try pressing on a panel or the minimize "-" button near a panel set', {panel: lower});
