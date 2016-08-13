@@ -3,10 +3,10 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/ascetic.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script>
 
-    <!--<script src="https://rawgit.com/davidfig/debug/master/debug.js"></script>-->
+    <script src="https://rawgit.com/davidfig/debug/master/debug.js"></script>
 
     <!--for testing purposes-->
-    <script src="../debug/debug.js"></script>
+    <!--<script src="../debug/debug.js"></script>-->
 
     <style>
         body {
@@ -31,7 +31,7 @@
     <pre><code class="javascript" id="code"></code></pre>
     <script id="sample">
 
-        Debug.init();
+        Debug.init({color: 'rgba(180,150,150,0.5)'});
 
         // adds a debug message on the default debug panel
         debug('This is a test message.');
@@ -44,10 +44,18 @@
         Debug.add('testing', {text: 'this is another panel.', side: 'rightTop'});
 
         // add a link to top right
-        Debug.addLink('github', 'https://github.com/davidfig/debug', {side: 'rightTop'});
+        var link = Debug.addLink('github', 'https://github.com/davidfig/debug', {side: 'rightTop'});
+
+        // add a parent link to
+        Debug.addLink('issues', 'htps://github.com/davidfig/debug/issues', {parent: link});
 
         var lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
         debug('Try pressing on a panel or the minimize "-" button near a panel set', {panel: lower});
+
+        var text1 = Debug.add('text1', {text: 'text', side: 'leftBottom'});
+        var text2 = Debug.add('text2', {text: 'text-2', parent: text1});
+        var text3 = Debug.add('text3', {text: 'text-3', parent: text2});
+        var text4 = Debug.add('text4', {text: 'text-4', parent: text3});
 
         // update the FPS
         setInterval(function () {
