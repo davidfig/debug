@@ -128,8 +128,8 @@ function addMeter(name, options)
     div.options = options;
     var side = getSide(options.side);
     var s = div.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
+    s.fontFamily = 'Helvetica Neue';
+    s.position = 'fixed';
     if (isLeft(side))
     {
         s.left = 0;
@@ -367,12 +367,12 @@ function get(name)
 function style(div, side)
 {
     var s = div.style;
-    s.fontFamily = "Helvetica Neue";
-    s.position = "fixed";
-    s.background = "rgba(150,150,150,0.5)";
-    s.color = "white";
+    s.fontFamily = 'Helvetica Neue';
+    s.position = 'fixed';
+    s.background = 'rgba(150,150,150,0.5)';
+    s.color = 'white';
     s.margin = 0;
-    s.padding = "5px";
+    s.padding = '5px';
     s.boxShadow = (isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     s.cursor = 'pointer';
     s.wordWrap = 'break-word';
@@ -420,9 +420,9 @@ function minimizeCreate(side)
         div.appendChild(minimize);
         count.style.marginRight = '20px';
     }
-    count.style.background = minimize.style.background = "rgba(150,150,150,0.5)";
+    count.style.background = minimize.style.background = 'rgba(150,150,150,0.5)';
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
-    minimize.innerHTML = side.isMinimized ? '+' : "&mdash;";
+    minimize.innerHTML = side.isMinimized ? '+' : '&mdash;';
     count.style.display = 'none';
     side.count = count;
     click(side.count, isLeft);
@@ -444,7 +444,7 @@ function handleMinimize(e)
     var side = e.currentTarget.offsetParent.side;
     side.isMinimized = !side.isMinimized;
     window.localStorage.setItem(side.dir, side.isMinimized);
-    div.innerHTML = side.isMinimized ? "+" : '&mdash;';
+    div.innerHTML = side.isMinimized ? '+' : '&mdash;';
     resize();
 }
 
@@ -592,7 +592,7 @@ function isBottom(side)
 // Captures ` key to expand default debug box
 function keypress(e)
 {
-    var code = (typeof e.which === "number") ? e.which : e.keyCode;
+    var code = (typeof e.which === 'number') ? e.which : e.keyCode;
     if (code === 96)
     {
         handleClick({currentTarget: defaultDiv});
@@ -602,7 +602,7 @@ function keypress(e)
 function error(e)
 {
     console.error(e);
-    debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + " at " + e.filename + " line " + e.lineno, {color: "error"});
+    debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
 }
 
 // exports
