@@ -188,6 +188,50 @@ function meter(percent, options)
     }
 }
 
+//  name: name of panel and text displayed
+//  link: html link to open when clicked
+//  options:
+//      side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
+//      size: 0 (default) or percent size
+//      style: object with CSS styles for the panel
+function addLink(name, link, options)
+{
+    options = options || {};
+    var div = document.createElement('div');
+    document.body.appendChild(div);
+    div.type = 'link';
+    div.name = name;
+    div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
+    div.options = options;
+    var side = getSide(options.side);
+    var s = div.style;
+    s.fontFamily = 'Helvetica Neue';
+    s.position = 'fixed';
+    if (isLeft(side))
+    {
+        s.left = 0;
+    }
+    else
+    {
+        s.right = 0;
+    }
+    if (options.style)
+    {
+        for (var key in options.style)
+        {
+            s[key] = options.style[key];
+        }
+    }
+    minimizeCreate(side);
+    div.side = side;
+    side.panels[name] = div;
+    style(div, side);
+    div.click = handleClick;
+    click(div);
+    resize();
+    return div;
+}
+
 function getDiv(options)
 {
     var div;
@@ -415,7 +459,11 @@ function handleCount(e)
 function handleClick(e)
 {
     var div = e.currentTarget;
-    if (div.options.expandable)
+    if (div.type === 'link')
+    {
+        return;
+    }
+    else if (div.options.expandable)
     {
         div.expanded = !div.expanded;
     }
@@ -562,6 +610,7 @@ var Debug = {
     init: init,
     add: add,
     addMeter: addMeter,
+    addLink: addLink,
     meter: meter,
     get: get,
     resize: resize,
