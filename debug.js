@@ -11,18 +11,21 @@ var sides = {
     'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
     'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
 };
+var defaultColor = 'rgba(150,150,150,0.5)';
 var initial;
 
 var padding = 7;
 
 // options for the default debug panel (see add())
 //  padding {number} between parent panels
+//  color {string} CSS color for default background of panels
 function init(options)
 {
     options = options || {};
     options.size = options.size || 0.25;
     options.expandable = options.expandable || 0.5;
     padding = options.panel || padding;
+    defaultColor = options.color || defaultColor;
     add('debug', options);
     window.addEventListener('resize', resize);
     window.addEventListener('error', error);
@@ -286,7 +289,7 @@ function debug(text, options)
     }
     else
     {
-        div.style.backgroundColor = 'rgba(150,150,150,0.5)';
+        div.style.backgroundColor = defaultColor;
     }
     var error = false;
     var result = '<p style="pointer-events: none">';
@@ -329,7 +332,7 @@ function debugOne(text, options)
     }
     else
     {
-        div.style.backgroundColor = 'rgba(150,150,150,0.5)';
+        div.style.backgroundColor = defaultColor;
     }
     var html = '<span style="pointer-events: none">';
     if (typeof text === 'object')
@@ -378,7 +381,7 @@ function style(div, side)
     var s = div.style;
     s.fontFamily = 'Helvetica Neue';
     s.position = 'fixed';
-    s.background = 'rgba(150,150,150,0.5)';
+    s.background = defaultColor;
     s.color = 'white';
     s.margin = 0;
     s.padding = '5px';
@@ -429,7 +432,7 @@ function minimizeCreate(side)
         div.appendChild(minimize);
         count.style.marginRight = '20px';
     }
-    count.style.background = minimize.style.background = 'rgba(150,150,150,0.5)';
+    count.style.background = minimize.style.background = defaultColor;
     count.style.boxShadow = minimize.style.boxShadow = (isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
     minimize.innerHTML = side.isMinimized ? '+' : '&mdash;';
     count.style.display = 'none';
