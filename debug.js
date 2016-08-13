@@ -274,14 +274,53 @@ function getDiv(options)
     return div;
 }
 
+function decode(args)
+{
+    var options, text = [], i;
+
+    // handle old style where first argument can be an array
+    if (Array.isArray(args[0]))
+    {
+        text = args[0];
+        i = 1;
+    }
+    else
+    {
+        i = 0;
+    }
+    for (; i < args.length; i++)
+    {
+        // last one may be options
+        if (i === args.length - 1)
+        {
+            if (typeof args[i] === 'object' && args[i] !== null && !Array.isArray(arguments[i]))
+            {
+                options = args[i];
+            }
+            else
+            {
+                text.push(args[i]);
+            }
+        }
+        else
+        {
+            text.push(args[i]);
+        }
+    }
+    return {text: text, options: options};
+}
+
 // adds text to the end of in the panel and scrolls the panel
+// first argument may be an array or you can include multiple strings: text1, text2, text3, [options]
 // options:
 //      color: background color for text
 //      name: name of panel
 //      panel: panel returned from Debug.Add()
-function debug(text, options)
+function debug()
 {
-    options = options || {};
+    var decoded = decode(arguments);
+    var text = decoded.text;
+    var options = decoded.options || {};
     var div = getDiv(options);
     if (options.color)
     {
@@ -293,20 +332,16 @@ function debug(text, options)
     }
     var error = false;
     var result = '<p style="pointer-events: none">';
-    if (text === null)
+    if (text.length === 0)
     {
         result += 'null';
     }
-    else if (typeof text === 'object')
+    else
     {
         for (var i = 0; i < text.length; i++)
         {
             result += text[i] + ((i !== text.length -1) ? ', ' : '');
         }
-    }
-    else
-    {
-        result += text;
     }
     result += '</p>';
     div.innerHTML += result;
@@ -319,12 +354,15 @@ function debug(text, options)
 }
 
 // replaces all text in the panel
+// first argument may be an array or you can include multiple strings: text1, text2, text3, [options]
 // options:
 //      name: name of panel
 //      panel: panel returned from Debug.Add()
-function debugOne(text, options)
+function debugOne()
 {
-    options = options || {};
+    var decoded = decode(arguments);
+    var text = decoded.text || [];
+    var options = decoded.options || {};
     var div = getDiv(options);
     if (options.color)
     {
@@ -335,16 +373,16 @@ function debugOne(text, options)
         div.style.backgroundColor = defaultColor;
     }
     var html = '<span style="pointer-events: none">';
-    if (typeof text === 'object')
+    if (text.length === 0)
     {
-        for (var i = 0, _i = text.length; i < _i; i++)
-        {
-            html += text[i] + ((i !== _i -1) ? ', ' : '');
-        }
+        html += 'null';
     }
     else
     {
-        html += text;
+        for (var i = 0; i < text.length; i++)
+        {
+            html += text[i] + ((i !== text.length -1) ? ', ' : '');
+        }
     }
     html += '</span>';
     div.innerHTML = html;
