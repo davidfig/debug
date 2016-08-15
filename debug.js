@@ -324,10 +324,12 @@ function debug()
     var options = decoded.options || {};
     if (options.console)
     {
+        var result = '';
         for (var i = 0; i < text.length; i++)
         {
-            console.log(text[i] + ((i !== text.length -1) ? ', ' : ''));
+            result += text[i] + ((i !== text.length -1) ? ', ' : '');
         }
+        console.log(result);
         return;
     }
     var div = getDiv(options);
