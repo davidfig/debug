@@ -316,11 +316,20 @@ function decode(args)
 //      color: background color for text
 //      name: name of panel
 //      panel: panel returned from Debug.Add()
+//      console: false (default) - print to console instead of panel (useful for lots of messages)
 function debug()
 {
     var decoded = decode(arguments);
     var text = decoded.text;
     var options = decoded.options || {};
+    if (options.console)
+    {
+        for (var i = 0; i < text.length; i++)
+        {
+            console.log(text[i] + ((i !== text.length -1) ? ', ' : ''));
+        }
+        return;
+    }
     var div = getDiv(options);
     if (options.color)
     {
