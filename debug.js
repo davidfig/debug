@@ -681,7 +681,7 @@ var Debug = {
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
         if (code === 96)
         {
-            Debug._Debug._handleClick({currentTarget: Debug.defaultDiv});
+            Debug._handleClick({currentTarget: Debug.defaultDiv});
         }
     },
 
