@@ -1,0 +1,19 @@
+{
+  "name": "debug",
+  "version": "1.0.0",
+  "description": "Javascript Debug Panels (useful for game development)",
+  "main": "debug.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/davidfig/debug.git"
+  },
+  "author": "david figatner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidfig/debug/issues"
+  },
+  "homepage": "https://github.com/davidfig/debug#readme"
+}
