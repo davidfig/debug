@@ -1,5 +1,5 @@
 {
-  "name": "debug",
+  "name": "@yy/debug",
   "version": "1.0.0",
   "description": "Javascript Debug Panels (useful for game development)",
   "main": "debug.js",
