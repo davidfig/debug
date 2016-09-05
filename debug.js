@@ -67,13 +67,18 @@ var Debug = {
         }
     },
 
-    // options {}
-    //  side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
-    //  expandable: 0 (default) or percent size to expand
-    //  default: if true then this panel becomes default for calls to debug and debugOne
-    //  size: 0 (default) or percent size
-    //  style: object with CSS styles for the panel
-    //  text: starting text
+    /**
+     * add debug panel
+     * @param {string} name of panel
+     * @param {object} options
+     * @param {string='rightBottom'} options.side - 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
+     * @param {number=0} expandable: 0 or percent size to expand
+     * @param {boolean=false} default - if true then this panel replaces default for calls to debug and debugOne
+     * @param {number=0} size - if > 0 then this is the percent size of panel
+     * @param {object=} style - CSS styles for the panel
+     * @param {string=} text - starting text
+     * @param {string} parent - attach to another panel (to the left or right, depending on the side of the panel)
+     */
     add: function(name, options)
     {
         options = options || {};
