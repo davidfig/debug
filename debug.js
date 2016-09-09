@@ -73,12 +73,23 @@ var Debug = {
         }
     },
 
-    changeSide: function(div, side)
+    /**
+     * change side of an existing panel
+     * @param {HTMLElement} div - panel returned by Debug
+     * @param {string} side
+     */
+    changeSide: function(div, sideName)
     {
+        // remove from old side
         var panels = div.side.panels;
-        panels.splice(panels.indexOf(side));
-        var side = Debug._getSide(side);
-        side.push(div);
+        delete panels[div.name];
+        Debug.resizeSide(div.side);
+
+        // add to new side
+        var side = Debug._getSide({side: sideName});
+        Debug._minimizeCreate(side);
+        side.panels[div.name] = div;
+        div.side = side;
         Debug.resizeSide(side);
     },
 
@@ -642,18 +653,22 @@ var Debug = {
                     if (Debug._isBottom(side))
                     {
                         div.style.bottom = current + 'px';
+                        div.style.top = '';
                     }
                     else
                     {
                         div.style.top = current + 'px';
+                        div.style.bottom = '';
                     }
                     if (Debug._isLeft(side))
                     {
                         div.style.left = '0px';
+                        div.style.right = '';
                     }
                     else
                     {
                         div.style.right = '0px';
+                        div.style.left = '';
                     }
                     if (div.options.size)
                     {
