@@ -1,9 +1,12 @@
-// Debug panels for javascript
-// debug.js <https://github.com/davidfig/debug>
-// Released under MIT license <https://github.com/davidfig/debug/license>
-// Author: David Figatner
-// Copyright (c) 2016 YOPEY YOPEY LLC
+/*
+    Debug panels for javascript
+    debug.js <https://github.com/davidfig/debug>
+    Released under MIT license <https://github.com/davidfig/debug/license>
+    Author: David Figatner
+    Copyright (c) 2016 YOPEY YOPEY LLC
+*/
 
+/* global document, localStorage, window */
 var Debug = {
 
     defaultDiv: null,
@@ -13,26 +16,29 @@ var Debug = {
         'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
         'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
     },
-    defaultColor: 'rgba(150,150,150,0.5)',
-    padding: 7,
 
-    // options for the default debug panel (see add())
-    //  padding {number} between parent panels
-    //  color {string} CSS color for default background of panels
+    /**
+     * initialize the debug panels (must be called before adding panels)
+     * @param {object} options
+     * @param {number=7} options.padding between parent panels
+     * @param {string='rgba(150,150,150,0.5)'} options.color - default CSS background color for panels
+     * may also include options for the default debug panel (see Debug.add() for a list of options)
+     * @return {HTMLElement} div where panel was created
+     */
     init: function(options)
     {
         options = options || {};
         options.size = options.size || 0.25;
         options.expandable = options.expandable || 0.5;
-        Debug.padding = options.panel || Debug.padding;
-        Debug.defaultColor = options.color || Debug.defaultColor;
-        Debug.add('debug', options);
+        Debug.padding = options.panel || 7;
+        Debug.defaultColor = options.color || 'rgba(150,150,150,0.5)';
         window.addEventListener('resize', Debug.resize);
         window.addEventListener('error', Debug._error);
         document.addEventListener('keypress', Debug._keypress);
+        return Debug.add('debug', options);
     },
 
-    // converts side
+    /** converts side string to proper case and ordering for comparison */
     _getSide: function(options)
     {
         if (options.parent)
@@ -67,6 +73,13 @@ var Debug = {
         }
     },
 
+    changeSide: function(div, side)
+    {
+        div.side.splice(div.side.indexOf(side));
+        var side = Debug._getSide(side);
+        side.push(div);
+    },
+
     /**
      * add debug panel
      * @param {string} name of panel
@@ -78,6 +91,7 @@ var Debug = {
      * @param {object=} style - CSS styles for the panel
      * @param {string=} text - starting text
      * @param {string} parent - attach to another panel (to the left or right, depending on the side of the panel)
+     * @return {HTMLElement} div where panel was created
      */
     add: function(name, options)
     {
@@ -127,10 +141,15 @@ var Debug = {
         return div;
     },
 
-    // options {}
-    //  side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
-    //  width: defaults to 100px
-    //  height: default to 25px
+    /**
+     * creates a meter (useful for FPS)
+     * @param {string} name of meter
+     * @param {object=} options
+     * @param {string='leftBottom'} options.side - 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
+     * @param {number=100} width - in pixels
+     * @param {number=25} height - in pixels
+     * @return {HTMLElement} div where panel was created
+     */
     addMeter: function(name, options)
     {
         options = options || {};
@@ -169,10 +188,14 @@ var Debug = {
         return div;
     },
 
-    // adds a line to the end of the meter and scrolls the meter as necessary
-    //      percent: between -1 to +1
-    //      name: name of panel
-    //      panel: panel returned from Debug.Add()
+    /**
+     * adds a line to the end of the meter and scrolls the meter as necessary
+     * must provide either an options.name or options.panel
+     * @param {number} percent - between -1 and +1
+     * @param {object} options
+     * @param {string=} options.name of panel to add the line
+     * @param {object=} options.panel - div of panel as returned by Debug.add()
+     */
     meter: function(percent, options)
     {
         var div;
@@ -185,7 +208,7 @@ var Debug = {
         {
             div = options.panel || left.panels[options.name] || right.panels[options.name];
         }
-        c = div.getContext('2d');
+        var c = div.getContext('2d');
         var data = c.getImageData(0, 0, div.width, div.height);
         c.putImageData(data, -1, 0);
         c.clearRect(div.width - 1, 0, div.width - 1, div.height);
@@ -205,6 +228,11 @@ var Debug = {
         }
     },
 
+    /**
+     * adds a panel with a browser link
+     * note: this panel cannot be individually minimized
+     * @param {name}
+     */
     //  name: name of panel and text displayed
     //  link: html link to open when clicked
     //  options:
