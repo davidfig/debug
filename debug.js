@@ -356,13 +356,15 @@ var Debug = {
         return {text: text, options: options};
     },
 
-    // adds text to the end of in the panel and scrolls the panel
-    // first argument may be an array or you can include multiple strings: text1, text2, text3, [options]
-    // options:
-    //      color: background color for text
-    //      name: name of panel
-    //      panel: panel returned from Debug.Add()
-    //      console: false (default) - print to console instead of panel (useful for lots of messages)
+    /**
+     * adds text to the end of in the panel and scrolls the panel
+     * @param {string[]|string...} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {object=} options
+     * @param {string=} options.color - background color for text (in CSS)
+     * @param {string=} options.name of panel
+     * @param {HTMLElement=} options.panel returned from Debug.Add()
+     * @param {boolean=false} options.console: print to console instead of panel (useful for fast updating messages)
+     */
     debug: function()
     {
         var decoded = Debug._decode(arguments);
@@ -410,11 +412,12 @@ var Debug = {
         }
     },
 
-    // replaces all text in the panel
-    // first argument may be an array or you can include multiple strings: text1, text2, text3, [options]
-    // options:
-    //      name: name of panel
-    //      panel: panel returned from Debug.Add()
+    /**
+     * replaces all text in the panel
+     * @param {string[]|string...} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {string=} options.name of panel
+     * @param {HTMLElement=} options.panel returned from Debug.Add()
+     */
     debugOne: function()
     {
         var decoded = Debug._decode(arguments);
@@ -445,7 +448,10 @@ var Debug = {
         div.innerHTML = html;
     },
 
-    // adds a debug message showing who called the function
+    /**
+     * adds a debug message showing who called the function
+     * @param {object} options (see Debug.debug)
+     */
     caller: function(options)
     {
         if (arguments.callee.caller)
@@ -458,7 +464,11 @@ var Debug = {
         }
     },
 
-    // returns a panel based on its name
+    /**
+     * returns a panel based on its name
+     * @param {string} name of panel
+     * @return {HTMLElement} panel or null if not found
+     */
     get: function(name)
     {
         for (var side in Debug.sides)
@@ -570,22 +580,29 @@ var Debug = {
         {
             return;
         }
-        else if (div.options.expandable)
-        {
-            div.expanded = !div.expanded;
-        }
         else
         {
-            var index = div.side.minimized.indexOf(div);
-            if (index === -1)
+            if (div.options.expandable && !div.expanded)
             {
-                div.side.minimized.push(div);
-                localStorage.setItem(div.side.dir + '-' + div.name, 'true');
+                div.expanded = true;
             }
             else
             {
-                div.side.minimized.splice(index, 1);
-                localStorage.setItem(div.side.dir + '-' + div.name, 'false');
+                if (div.options.expandable)
+                {
+                    div.expanded = false;
+                }
+                var index = div.side.minimized.indexOf(div);
+                if (index === -1)
+                {
+                    div.side.minimized.push(div);
+                    localStorage.setItem(div.side.dir + '-' + div.name, 'true');
+                }
+                else
+                {
+                    div.side.minimized.splice(index, 1);
+                    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
+                }
             }
         }
         Debug.resize();
