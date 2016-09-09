@@ -75,9 +75,11 @@ var Debug = {
 
     changeSide: function(div, side)
     {
-        div.side.splice(div.side.indexOf(side));
+        var panels = div.side.panels;
+        panels.splice(panels.indexOf(side));
         var side = Debug._getSide(side);
         side.push(div);
+        Debug.resizeSide(side);
     },
 
     /**
