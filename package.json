@@ -1,0 +1,27 @@
+{
+  "name": "@yy/debugdemo",
+  "version": "1.0.0",
+  "description": "debug panels for javascript apps (designed specifically for game development)",
+  "main": "index.html",
+  "dependencies": {
+    "@yy/debug": "davidfig/debug",
+    "highlight.js": "^9.6.0"
+  },
+  "devDependencies": {
+    "jsdoc-to-markdown": "^1.3.7"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "browserify index.js > index.compiled.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidfig/debug.git"
+  },
+  "author": "David Figatner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davidfig/debug/issues"
+  },
+  "homepage": "https://github.com/davidfig/debug#readme"
+}
