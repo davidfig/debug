@@ -1,13 +1,15 @@
 /*
     Debug panels for javascript
     debug.js <https://github.com/davidfig/debug>
-    Released under MIT license <https://github.com/davidfig/debug/license>
+    Released under MIT license <https://github.com/davidfig/debug/blob/master/LICENSE>
     Author: David Figatner
     Copyright (c) 2016 YOPEY YOPEY LLC
 */
 
-/* global document, localStorage, window */
-var Debug = {
+/**
+ * @module @yy/debug
+ */
+const Debug = {
 
     defaultDiv: null,
     sides: {
@@ -20,8 +22,8 @@ var Debug = {
     /**
      * initialize the debug panels (must be called before adding panels)
      * @param {object} options
-     * @param {number=7} options.padding between parent panels
-     * @param {string='rgba(150,150,150,0.5)'} options.color - default CSS background color for panels
+     * @param {number} [options.padding=7] between parent panels
+     * @param {string} [options.color='rgba(150,150,150,0.5)'] - default CSS background color for panels
      * may also include options for the default debug panel (see Debug.add() for a list of options)
      * @return {HTMLElement} div where panel was created
      */
@@ -38,41 +40,6 @@ var Debug = {
         return Debug.add('debug', options);
     },
 
-    /** converts side string to proper case and ordering for comparison */
-    _getSide: function(options)
-    {
-        if (options.parent)
-        {
-            return options.parent.side;
-        }
-        var side = options.side;
-        if (!side)
-        {
-            return Debug.sides['rightBottom'];
-        }
-        var change = side.toUpperCase();
-        if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
-        {
-            return Debug.sides['leftBottom'];
-        }
-        else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
-        {
-            return Debug.sides['rightBottom'];
-        }
-        else if (change === 'LEFTTOP' || change === 'TOPLEFT')
-        {
-            return Debug.sides['leftTop'];
-        }
-        else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
-        {
-            return Debug.sides['rightTop'];
-        }
-        else
-        {
-            return Debug.sides['rightBottom'];
-        }
-    },
-
     /**
      * change side of an existing panel
      * @param {HTMLElement} div - panel returned by Debug
@@ -81,35 +48,35 @@ var Debug = {
     changeSide: function(div, sideName)
     {
         // remove from old side
-        var panels = div.side.panels;
+        const panels = div.side.panels;
         delete panels[div.name];
-        Debug.resizeSide(div.side);
+        Debug._resizeSide(div.side);
 
         // add to new side
-        var side = Debug._getSide({side: sideName});
+        const side = Debug._getSide({side: sideName});
         Debug._minimizeCreate(side);
         side.panels[div.name] = div;
         div.side = side;
-        Debug.resizeSide(side);
+        Debug._resizeSide(side);
     },
 
     /**
      * add debug panel
      * @param {string} name of panel
      * @param {object} options
-     * @param {string='rightBottom'} options.side - 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
-     * @param {number=0} expandable: 0 or percent size to expand
-     * @param {boolean=false} default - if true then this panel replaces default for calls to debug and debugOne
-     * @param {number=0} size - if > 0 then this is the percent size of panel
+     * @param {string} [options.side='rightBottom']  'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
+     * @param {number} [expandable=0] or percent size to expand
+     * @param {boolean} [default=false] if true then this panel replaces default for calls to debug and debugOne
+     * @param {number} [size=0] if > 0 then this is the percent size of panel
      * @param {object=} style - CSS styles for the panel
      * @param {string=} text - starting text
-     * @param {string} parent - attach to another panel (to the left or right, depending on the side of the panel)
+     * @param {string=} parent - attach to another panel (to the left or right, depending on the side of the panel)
      * @return {HTMLElement} div where panel was created
      */
     add: function(name, options)
     {
         options = options || {};
-        var div = document.createElement('div');
+        const div = document.createElement('div');
         document.body.appendChild(div);
         div.name = name;
         div.options = options;
@@ -117,8 +84,8 @@ var Debug = {
         {
             Debug.defaultDiv = div;
         }
-        var side = Debug._getSide(options);
-        var s = div.style;
+        const side = Debug._getSide(options);
+        const s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
         if (Debug._isLeft(side))
@@ -131,7 +98,7 @@ var Debug = {
         }
         if (options.style)
         {
-            for (var key in options.style)
+            for (let key in options.style)
             {
                 s[key] = options.style[key];
             }
@@ -158,15 +125,15 @@ var Debug = {
      * creates a meter (useful for FPS)
      * @param {string} name of meter
      * @param {object=} options
-     * @param {string='leftBottom'} options.side - 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
-     * @param {number=100} width - in pixels
-     * @param {number=25} height - in pixels
+     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
+     * @param {number} [width=100] in pixels
+     * @param {number} [height=25] in pixels
      * @return {HTMLElement} div where panel was created
      */
     addMeter: function(name, options)
     {
         options = options || {};
-        var div = document.createElement('canvas');
+        const div = document.createElement('canvas');
         div.type = 'meter';
         div.width = options.width || 100;
         div.height = options.height || 25;
@@ -175,8 +142,8 @@ var Debug = {
         document.body.appendChild(div);
         div.name = name;
         div.options = options;
-        var side = Debug._getSide(options);
-        var s = div.style;
+        const side = Debug._getSide(options);
+        const s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
         if (Debug._isLeft(side))
@@ -211,21 +178,14 @@ var Debug = {
      */
     meter: function(percent, options)
     {
-        var div;
         options = options || {};
-        if (!options.panel && !options.name)
-        {
-            div = Debug.defaultDiv;
-        }
-        else
-        {
-            div = options.panel || left.panels[options.name] || right.panels[options.name];
-        }
-        var c = div.getContext('2d');
-        var data = c.getImageData(0, 0, div.width, div.height);
+        const div = Debug._getDiv(options);
+        const c = div.getContext('2d');
+        const data = c.getImageData(0, 0, div.width, div.height);
         c.putImageData(data, -1, 0);
         c.clearRect(div.width - 1, 0, div.width - 1, div.height);
-        var height, middle = Math.round(div.height / 2);
+        const middle = Math.round(div.height / 2);
+        let height;
         if (percent < 0)
         {
             c.fillStyle = 'red';
@@ -244,14 +204,15 @@ var Debug = {
     /**
      * adds a panel with a browser link
      * note: this panel cannot be individually minimized
-     * @param {name}
+     * @param {string} name
+     * @param {string} link
+     * @param {object=} options
+     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
+     * @param {number} [width=100] in pixels
+     * @param {number} [height=25] in pixels
+     * @param {object=} style - additional css styles to apply to link
+     * @return {HTMLElement} div where panel was created
      */
-    //  name: name of panel and text displayed
-    //  link: html link to open when clicked
-    //  options:
-    //      side: 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
-    //      size: 0 (default) or percent size
-    //      style: object with CSS styles for the panel
     addLink: function(name, link, options)
     {
         options = options || {};
@@ -290,82 +251,16 @@ var Debug = {
         return div;
     },
 
-    _getDiv: function(options)
-    {
-        var div;
-        if (!options.panel && !options.name)
-        {
-            div = Debug.defaultDiv;
-        }
-        else if (options.panel)
-        {
-            div = options.panel;
-        }
-        else
-        {
-            for (var name in Debug.sides)
-            {
-                var panel = Debug.sides[name].panels[options.name];
-                if (panel)
-                {
-                    div = panel;
-                    break;
-                }
-            }
-        }
-        if (!div)
-        {
-            div = Debug.defaultDiv;
-        }
-        return div;
-    },
-
-    _decode: function(args)
-    {
-        var options, text = [], i;
-
-        // handle old style where first argument can be an array
-        if (Array.isArray(args[0]))
-        {
-            text = args[0];
-            i = 1;
-        }
-        else
-        {
-            i = 0;
-        }
-        for (; i < args.length; i++)
-        {
-            // last one may be options
-            if (i === args.length - 1)
-            {
-                if (typeof args[i] === 'object' && args[i] !== null && !Array.isArray(arguments[i]))
-                {
-                    options = args[i];
-                }
-                else
-                {
-                    text.push(args[i]);
-                }
-            }
-            else
-            {
-                text.push(args[i]);
-            }
-        }
-        return {text: text, options: options};
-    },
-
     /**
      * adds text to the end of in the panel and scrolls the panel
-     * @param {string[]|string...} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
      * @param {object=} options
      * @param {string=} options.color - background color for text (in CSS)
      * @param {string=} options.name of panel
      * @param {HTMLElement=} options.panel returned from Debug.Add()
-     * @param {boolean=false} options.console: print to console instead of panel (useful for fast updating messages)
+     * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
      */
-    debug: function()
+    log: function()
     {
         var decoded = Debug._decode(arguments);
         var text = decoded.text;
@@ -389,7 +284,6 @@ var Debug = {
         {
             div.style.backgroundColor = Debug.defaultColor;
         }
-        var error = false;
         var result = '<p style="pointer-events: none">';
         if (text.length === 0)
         {
@@ -414,11 +308,11 @@ var Debug = {
 
     /**
      * replaces all text in the panel
-     * @param {string[]|string...} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
      * @param {string=} options.name of panel
      * @param {HTMLElement=} options.panel returned from Debug.Add()
      */
-    debugOne: function()
+    one: function()
     {
         var decoded = Debug._decode(arguments);
         var text = decoded.text || [];
@@ -456,11 +350,11 @@ var Debug = {
     {
         if (arguments.callee.caller)
         {
-            debug('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
+            Debug.log('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
         }
         else
         {
-            debug('Called by: top level', options);
+            Debug.log('Called by: top level', options);
         }
     },
 
@@ -481,6 +375,140 @@ var Debug = {
         return null;
     },
 
+    /**
+     * resize all panels
+     */
+    resize: function()
+    {
+        function side(dir)
+        {
+            if (Debug.sides[dir].minimize)
+            {
+                Debug._resizeSide(Debug.sides[dir]);
+            }
+        }
+        side('leftBottom');
+        side('rightBottom');
+        side('leftTop');
+        side('rightTop');
+    },
+
+    /**
+     * converts side string to proper case and ordering for comparison
+     * @private
+     * */
+    _getSide: function(options)
+    {
+        if (options.parent)
+        {
+            return options.parent.side;
+        }
+        const side = options.side;
+        if (!side)
+        {
+            return Debug.sides['rightBottom'];
+        }
+        const change = side.toUpperCase();
+        if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
+        {
+            return Debug.sides['leftBottom'];
+        }
+        else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
+        {
+            return Debug.sides['rightBottom'];
+        }
+        else if (change === 'LEFTTOP' || change === 'TOPLEFT')
+        {
+            return Debug.sides['leftTop'];
+        }
+        else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
+        {
+            return Debug.sides['rightTop'];
+        }
+        else
+        {
+            return Debug.sides['rightBottom'];
+        }
+    },
+
+    /**
+     * returns correct div based on options
+     * @private
+     */
+    _getDiv: function(options)
+    {
+        var div;
+        if (!options.panel && !options.name)
+        {
+            div = Debug.defaultDiv;
+        }
+        else if (options.panel)
+        {
+            div = options.panel;
+        }
+        else
+        {
+            for (var name in Debug.sides)
+            {
+                var panel = Debug.sides[name].panels[options.name];
+                if (panel)
+                {
+                    div = panel;
+                    break;
+                }
+            }
+        }
+        if (!div)
+        {
+            div = Debug.defaultDiv;
+        }
+        return div;
+    },
+
+    /**
+     * decodes Debug.log or Debug.one parameters
+     * @private
+     */
+    _decode: function(args)
+    {
+        var options, text = [], i;
+
+        // handle old style where first argument can be an array
+        if (Array.isArray(args[0]))
+        {
+            text = args[0];
+            i = 1;
+        }
+        else
+        {
+            i = 0;
+        }
+        for (; i < args.length; i++)
+        {
+            // last one may be options
+            if (i === args.length - 1)
+            {
+                if (typeof args[i] === 'object' && args[i] !== null && !Array.isArray(arguments[i]))
+                {
+                    options = args[i];
+                }
+                else
+                {
+                    text.push(args[i]);
+                }
+            }
+            else
+            {
+                text.push(args[i]);
+            }
+        }
+        return {text: text, options: options};
+    },
+
+    /**
+     * creates a default style for a div
+     * @private
+     */
     _style: function(div, side)
     {
         var s = div.style;
@@ -497,6 +525,10 @@ var Debug = {
         s.zIndex = 1000;
     },
 
+    /**
+     * creates the minimize button when adding the first panel for that side
+     * @private
+     */
     _minimizeCreate: function(side)
     {
         if (side.minimize)
@@ -546,7 +578,10 @@ var Debug = {
         Debug._click(minimize, Debug._isLeft);
     },
 
-    // set click events for panel
+    /**
+     * event listener for panels
+     * @private
+     */
     _click: function(div, isLeft)
     {
         div.addEventListener('click', div.click);
@@ -555,6 +590,11 @@ var Debug = {
         div.isLeft = isLeft;
     },
 
+    /**
+     * minimizes panel
+     * @param {Event} e
+     * @private
+     */
     _handleMinimize: function(e)
     {
         var div = e.currentTarget;
@@ -565,6 +605,11 @@ var Debug = {
         Debug.resize();
     },
 
+    /**
+     * provides count to display next to minimize button
+     * @param {Event} e
+     * @private
+     */
     _handleCount: function(e)
     {
         var side = e.currentTarget.offsetParent.side;
@@ -573,6 +618,11 @@ var Debug = {
         Debug.resize();
     },
 
+    /**
+     * handler for click
+     * @param {Event} e
+     * @private
+     */
     _handleClick: function(e)
     {
         var div = e.currentTarget;
@@ -608,7 +658,12 @@ var Debug = {
         Debug.resize();
     },
 
-    resizeSide: function(side)
+    /**
+     * resize individual side
+     * @param {object} side returned by Debug._getSide()
+     * @private
+     */
+    _resizeSide: function(side)
     {
         if (side.isMinimized)
         {
@@ -717,32 +772,28 @@ var Debug = {
         }
     },
 
-    resize: function()
-    {
-        function side(dir)
-        {
-            if (Debug.sides[dir].minimize)
-            {
-                Debug.resizeSide(Debug.sides[dir]);
-            }
-        }
-        side('leftBottom');
-        side('rightBottom');
-        side('leftTop');
-        side('rightTop');
-    },
-
+    /**
+     * @param {object} side returned by Debug._getSide
+     * @return {boolean} whether on the left side
+     */
     _isLeft: function(side)
     {
         return side.dir.indexOf('left') !== -1;
     },
 
+    /**
+     * @param {object} side returned by Debug._getSide
+     * @return {boolean} whether on the bottom side
+     */
     _isBottom: function(side)
     {
         return side.dir.indexOf('Bottom') !== -1;
     },
 
-    // Captures ` key to expand default debug box
+    /**
+     * handler for ` key used to expand default debug box
+     * @param {Event} e
+     */
     _keypress: function(e)
     {
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
@@ -752,38 +803,18 @@ var Debug = {
         }
     },
 
+    /**
+     * handler for errors
+     * @param {Event} e
+     */
     _error: function(e)
     {
         console.error(e);
-        debug((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
+        Debug.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
     }
 };
 
-// add support for AMD (Asynchronous Module Definition) libraries such as require.js.
-if (typeof define === 'function' && define.amd)
-{
-    define(function()
-    {
-        return {
-            Debug: Debug,
-            debug: Debug.debug,
-            debugOne: Debug.debugOne
-        };
-    });
-}
+module.exports = new Debug();
 
-// add support for CommonJS libraries such as browserify.
-if (typeof exports !== 'undefined')
-{
-    module.exports = Debug;
-    window.debug = Debug.debug;
-    window.debugOne = Debug.debugOne;
-}
-
-// define globally in case AMD is not available or available but not used
-if (typeof window !== 'undefined')
-{
-    window.Debug = Debug;
-    window.debug = Debug.debug;
-    window.debugOne = Debug.debugOne;
-}
+// for eslint
+/* global document, localStorage, window, console */

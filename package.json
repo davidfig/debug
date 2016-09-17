@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/davidfig/debug/issues"
   },
-  "homepage": "https://github.com/davidfig/debug#readme"
+  "homepage": "https://github.com/davidfig/debug#readme",
+  "dependencies": {
+    "pixi.js": "^4.0.1"
+  }
 }
