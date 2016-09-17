@@ -1,5 +1,5 @@
 {
-  "name": "@yy/debug",
+  "name": "yy-debug",
   "version": "1.0.0",
   "description": "Javascript Debug Panels (useful for game development)",
   "main": "debug.js",
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/davidfig/debug.git"
   },
-  "author": "david figatner",
+  "author": "David Figatner",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/davidfig/debug/issues"
