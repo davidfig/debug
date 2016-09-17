@@ -1,7 +1,9 @@
 ## debug.js
-debug panels for javascript apps (particularly useful for game development)
+debug panels for javascript (designed for game development)
 
 ## Code Example
+
+    const Debug = require('@yy/debug');
 
     // initialize the library
     Debug.init();
@@ -25,6 +27,21 @@ debug panels for javascript apps (particularly useful for game development)
     }, 60);
 
     Debug.add('testing', {text: 'this is another panel.'});
+
+## Live Example
+https://davidfig.github.io/debug/
+
+see also
+
+* https://davidfig.github.io/update/
+* https://davidfig.github.io/animate/
+* https://davidfig.github.io/renderer/
+* https://davidfig.github.io/viewport/
+
+## Installation
+include debug.js in your project or add to your workflow
+
+    npm install --save davidfig/debug
 
 # API Reference
 {{#class name="Debug"}}
