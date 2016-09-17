@@ -15,7 +15,7 @@ class Debug
     constructor()
     {
         this.defaultDiv = null;
-        this. sides = {
+        this.sides = {
             'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
             'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
             'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
@@ -25,10 +25,10 @@ class Debug
 
     /**
      * initialize the debug panels (must be called before adding panels)
-     * @param {object} options
+     * options may also include options for the default debug panel (see this.add() for a list of these options)
+     * @param {object} [options]
      * @param {number} [options.padding=7] between parent panels
      * @param {string} [options.color='rgba(150,150,150,0.5)'] - default CSS background color for panels
-     * may also include options for the default debug panel (see Debug.add() for a list of options)
      * @return {HTMLElement} div where panel was created
      */
     init(options)
@@ -36,12 +36,12 @@ class Debug
         options = options || {};
         options.size = options.size || 0.25;
         options.expandable = options.expandable || 0.5;
-        Debug.padding = options.panel || 7;
-        Debug.defaultColor = options.color || 'rgba(150,150,150,0.5)';
-        window.addEventListener('resize', Debug.resize);
-        window.addEventListener('error', Debug._error);
-        document.addEventListener('keypress', Debug._keypress);
-        return Debug.add('debug', options);
+        this.padding = options.panel || 7;
+        this.defaultColor = options.color || 'rgba(150,150,150,0.5)';
+        window.addEventListener('resize', this.resize);
+        window.addEventListener('error', this._error);
+        document.addEventListener('keypress', this._keypress);
+        return this.add('debug', options);
     }
 
     /**
@@ -54,27 +54,27 @@ class Debug
         // remove from old side
         const panels = div.side.panels;
         delete panels[div.name];
-        Debug._resizeSide(div.side);
+        this._resizeSide(div.side);
 
         // add to new side
-        const side = Debug._getSide({side: sideName});
-        Debug._minimizeCreate(side);
+        const side = this._getSide({side: sideName});
+        this._minimizeCreate(side);
         side.panels[div.name] = div;
         div.side = side;
-        Debug._resizeSide(side);
+        this._resizeSide(side);
     }
 
     /**
      * add debug panel
      * @param {string} name of panel
-     * @param {object} options
+     * @param {object} [options]
      * @param {string} [options.side='rightBottom']  'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
-     * @param {number} [expandable=0] or percent size to expand
-     * @param {boolean} [default=false] if true then this panel replaces default for calls to debug and debugOne
-     * @param {number} [size=0] if > 0 then this is the percent size of panel
-     * @param {object=} style - CSS styles for the panel
-     * @param {string=} text - starting text
-     * @param {string=} parent - attach to another panel (to the left or right, depending on the side of the panel)
+     * @param {number} [options.expandable=0] or percent size to expand
+     * @param {boolean} [options.default=false] if true then this panel replaces default for calls to debug and debugOne
+     * @param {number} [options.size=0] if > 0 then this is the percent size of panel
+     * @param {object} [style] - CSS styles for the panel
+     * @param {string} [text] - starting text
+     * @param {string} [parent] - attach to another panel (to the left or right, depending on the side of the panel)
      * @return {HTMLElement} div where panel was created
      */
     add(name, options)
@@ -84,15 +84,15 @@ class Debug
         document.body.appendChild(div);
         div.name = name;
         div.options = options;
-        if (!Debug.defaultDiv || options.default)
+        if (!this.defaultDiv || options.default)
         {
-            Debug.defaultDiv = div;
+            this.defaultDiv = div;
         }
-        const side = Debug._getSide(options);
+        const side = this._getSide(options);
         const s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
-        if (Debug._isLeft(side))
+        if (this._isLeft(side))
         {
             s.left = 0;
         }
@@ -107,12 +107,12 @@ class Debug
                 s[key] = options.style[key];
             }
         }
-        Debug._minimizeCreate(side);
+        this._minimizeCreate(side);
         div.side = side;
         side.panels[name] = div;
-        Debug._style(div, side);
-        div.click = Debug._handleClick;
-        Debug._click(div);
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
         if (options.text)
         {
             div.innerHTML = options.text;
@@ -121,17 +121,17 @@ class Debug
         {
             side.minimized.push(div);
         }
-        Debug.resize();
+        this.resize();
         return div;
     }
 
     /**
      * creates a meter (useful for FPS)
      * @param {string} name of meter
-     * @param {object=} options
+     * @param {object} [options]
      * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
-     * @param {number} [width=100] in pixels
-     * @param {number} [height=25] in pixels
+     * @param {number} [options.width=100] in pixels
+     * @param {number} [options.height=25] in pixels
      * @return {HTMLElement} div where panel was created
      */
     addMeter(name, options)
@@ -146,11 +146,11 @@ class Debug
         document.body.appendChild(div);
         div.name = name;
         div.options = options;
-        const side = Debug._getSide(options);
+        const side = this._getSide(options);
         const s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
-        if (Debug._isLeft(side))
+        if (this._isLeft(side))
         {
             s.left = 0;
         }
@@ -158,17 +158,17 @@ class Debug
         {
             s.right = 0;
         }
-        Debug._minimizeCreate(side);
+        this._minimizeCreate(side);
         div.side = side;
         side.panels[name] = div;
-        Debug._style(div, side);
-        div.click = Debug._handleClick;
-        Debug._click(div);
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
         if (options.text)
         {
             div.innerHTML = options.text;
         }
-        Debug.resize();
+        this.resize();
         return div;
     }
 
@@ -176,14 +176,14 @@ class Debug
      * adds a line to the end of the meter and scrolls the meter as necessary
      * must provide either an options.name or options.panel
      * @param {number} percent - between -1 and +1
-     * @param {object} options
-     * @param {string=} options.name of panel to add the line
-     * @param {object=} options.panel - div of panel as returned by Debug.add()
+     * @param {object} [options]
+     * @param {string} [options.name] of panel to add the line
+     * @param {object} [options.panel] - div of panel as returned by this.add()
      */
     meter(percent, options)
     {
         options = options || {};
-        const div = Debug._getDiv(options);
+        const div = this._getDiv(options);
         const c = div.getContext('2d');
         const data = c.getImageData(0, 0, div.width, div.height);
         c.putImageData(data, -1, 0);
@@ -210,11 +210,11 @@ class Debug
      * note: this panel cannot be individually minimized
      * @param {string} name
      * @param {string} link
-     * @param {object=} options
+     * @param {object} [options]
      * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
-     * @param {number} [width=100] in pixels
-     * @param {number} [height=25] in pixels
-     * @param {object=} style - additional css styles to apply to link
+     * @param {number} [options.width=100] in pixels
+     * @param {number} [options.height=25] in pixels
+     * @param {object} [options.style] - additional css styles to apply to link
      * @return {HTMLElement} div where panel was created
      */
     addLink(name, link, options)
@@ -226,11 +226,11 @@ class Debug
         div.name = name;
         div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
         div.options = options;
-        var side = Debug._getSide(options);
+        var side = this._getSide(options);
         var s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
-        if (Debug._isLeft(side))
+        if (this._isLeft(side))
         {
             s.left = 0;
         }
@@ -245,28 +245,28 @@ class Debug
                 s[key] = options.style[key];
             }
         }
-        Debug._minimizeCreate(side);
+        this._minimizeCreate(side);
         div.side = side;
         side.panels[name] = div;
-        Debug._style(div, side);
-        div.click = Debug._handleClick;
-        Debug._click(div);
-        Debug.resize();
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
+        this.resize();
         return div;
     }
 
     /**
      * adds text to the end of in the panel and scrolls the panel
      * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
-     * @param {object=} options
-     * @param {string=} options.color - background color for text (in CSS)
-     * @param {string=} options.name of panel
-     * @param {HTMLElement=} options.panel returned from Debug.Add()
+     * @param {object} [options]
+     * @param {string} [options.color] background color for text (in CSS)
+     * @param {string} [options.name] of panel
+     * @param {HTMLElement} [options.panel] returned from this.Add()
      * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
      */
     log()
     {
-        var decoded = Debug._decode(arguments);
+        var decoded = this._decode(arguments);
         var text = decoded.text;
         var options = decoded.options || {};
         if (options.console)
@@ -279,14 +279,14 @@ class Debug
             console.log(result);
             return;
         }
-        var div = Debug._getDiv(options);
+        var div = this._getDiv(options);
         if (options.color)
         {
             div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
         }
         else
         {
-            div.style.backgroundColor = Debug.defaultColor;
+            div.style.backgroundColor = this.defaultColor;
         }
         var result = '<p style="pointer-events: none">';
         if (text.length === 0)
@@ -305,30 +305,30 @@ class Debug
         div.scrollTop = div.scrollHeight;
         if (options.color === 'error')
         {
-            Debug.defaultDiv.expanded = true;
-            Debug.resize();
+            this.defaultDiv.expanded = true;
+            this.resize();
         }
     }
 
     /**
      * replaces all text in the panel
      * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
-     * @param {string=} options.name of panel
-     * @param {HTMLElement=} options.panel returned from Debug.Add()
+     * @param {string} [options.name] of panel, defaults to defaultDiv
+     * @param {HTMLElement} [options.panel] returned from this.Add()
      */
     one()
     {
-        var decoded = Debug._decode(arguments);
+        var decoded = this._decode(arguments);
         var text = decoded.text || [];
         var options = decoded.options || {};
-        var div = Debug._getDiv(options);
+        var div = this._getDiv(options);
         if (options.color)
         {
             div.style.backgroundColor = options.color;
         }
         else
         {
-            div.style.backgroundColor = Debug.defaultColor;
+            div.style.backgroundColor = this.defaultColor;
         }
         var html = '<span style="pointer-events: none">';
         if (text.length === 0)
@@ -348,17 +348,17 @@ class Debug
 
     /**
      * adds a debug message showing who called the function
-     * @param {object} options (see Debug.debug)
+     * @param {object} [options] (see this.debug)
      */
     caller(options)
     {
         if (arguments.callee.caller)
         {
-            Debug.log('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
+            this.log('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
         }
         else
         {
-            Debug.log('Called by: top level', options);
+            this.log('Called by: top level', options);
         }
     }
 
@@ -369,11 +369,11 @@ class Debug
      */
     get(name)
     {
-        for (var side in Debug.sides)
+        for (var side in this.sides)
         {
-            if (Debug.sides[side].panels[name])
+            if (this.sides[side].panels[name])
             {
-                return Debug.sides[side].panels[name];
+                return this.sides[side].panels[name];
             }
         }
         return null;
@@ -386,9 +386,9 @@ class Debug
     {
         function side(dir)
         {
-            if (Debug.sides[dir].minimize)
+            if (this.sides[dir].minimize)
             {
-                Debug._resizeSide(Debug.sides[dir]);
+                this._resizeSide(this.sides[dir]);
             }
         }
         side('leftBottom');
@@ -399,7 +399,7 @@ class Debug
 
     /**
      * converts side string to proper case and ordering for comparison
-     * @params {object} options - as provided to Debug.add...()
+     * @params {object} options - as provided to this.add...()
      * @private
      */
     _getSide(options)
@@ -411,28 +411,28 @@ class Debug
         const side = options.side;
         if (!side)
         {
-            return Debug.sides['rightBottom'];
+            return this.sides['rightBottom'];
         }
         const change = side.toUpperCase();
         if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
         {
-            return Debug.sides['leftBottom'];
+            return this.sides['leftBottom'];
         }
         else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
         {
-            return Debug.sides['rightBottom'];
+            return this.sides['rightBottom'];
         }
         else if (change === 'LEFTTOP' || change === 'TOPLEFT')
         {
-            return Debug.sides['leftTop'];
+            return this.sides['leftTop'];
         }
         else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
         {
-            return Debug.sides['rightTop'];
+            return this.sides['rightTop'];
         }
         else
         {
-            return Debug.sides['rightBottom'];
+            return this.sides['rightBottom'];
         }
     }
 
@@ -445,7 +445,7 @@ class Debug
         var div;
         if (!options.panel && !options.name)
         {
-            div = Debug.defaultDiv;
+            div = this.defaultDiv;
         }
         else if (options.panel)
         {
@@ -453,9 +453,9 @@ class Debug
         }
         else
         {
-            for (var name in Debug.sides)
+            for (var name in this.sides)
             {
-                var panel = Debug.sides[name].panels[options.name];
+                var panel = this.sides[name].panels[options.name];
                 if (panel)
                 {
                     div = panel;
@@ -465,13 +465,14 @@ class Debug
         }
         if (!div)
         {
-            div = Debug.defaultDiv;
+            div = this.defaultDiv;
         }
         return div;
     }
 
     /**
-     * decodes Debug.log or Debug.one parameters
+     * decodes this.log or this.one parameters
+     * @param {Array} args
      * @private
      */
     _decode(args)
@@ -512,6 +513,8 @@ class Debug
 
     /**
      * creates a default style for a div
+     * @param {HTMLElement} div
+     * @param {object} side
      * @private
      */
     _style(div, side)
@@ -519,11 +522,11 @@ class Debug
         var s = div.style;
         s.fontFamily = 'Helvetica Neue';
         s.position = 'fixed';
-        s.background = Debug.defaultColor;
+        s.background = this.defaultColor;
         s.color = 'white';
         s.margin = 0;
         s.padding = '5px';
-        s.boxShadow = (Debug._isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
+        s.boxShadow = (this._isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
         s.cursor = 'pointer';
         s.wordWrap = 'break-word';
         s.overflow = 'auto';
@@ -532,6 +535,7 @@ class Debug
 
     /**
      * creates the minimize button when adding the first panel for that side
+     * @param {object} side
      * @private
      */
     _minimizeCreate(side)
@@ -545,7 +549,7 @@ class Debug
         document.body.appendChild(div);
         var s = div.style;
         div.side = side;
-        if (Debug._isLeft(side))
+        if (this._isLeft(side))
         {
             s.left = 0;
         }
@@ -553,16 +557,16 @@ class Debug
         {
             s.right = 0;
         }
-        Debug._style(div, side);
+        this._style(div, side);
         s.backgroundColor = 'transparent';
         s.boxShadow = null;
         s.padding = 0;
         side.minimize = div;
         var minimize = document.createElement('span');
         var count = document.createElement('span');
-        minimize.click = Debug._handleMinimize;
-        count.click = Debug._handleCount;
-        if (Debug._isLeft(side))
+        minimize.click = this._handleMinimize;
+        count.click = this._handleCount;
+        if (this._isLeft(side))
         {
             div.appendChild(minimize);
             div.appendChild(count);
@@ -574,17 +578,19 @@ class Debug
             div.appendChild(minimize);
             count.style.marginRight = '20px';
         }
-        count.style.background = minimize.style.background = Debug.defaultColor;
-        count.style.boxShadow = minimize.style.boxShadow = (Debug._isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
+        count.style.background = minimize.style.background = this.defaultColor;
+        count.style.boxShadow = minimize.style.boxShadow = (this._isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
         minimize.innerHTML = side.isMinimized ? '+' : '&mdash;';
         count.style.display = 'none';
         side.count = count;
-        Debug._click(side.count, Debug._isLeft);
-        Debug._click(minimize, Debug._isLeft);
+        this._click(side.count, this._isLeft);
+        this._click(minimize, this._isLeft);
     }
 
     /**
      * event listener for panels
+     * @param {HTMLElement} div
+     * @param {boolean} isLeft
      * @private
      */
     _click(div, isLeft)
@@ -607,7 +613,7 @@ class Debug
         side.isMinimized = !side.isMinimized;
         window.localStorage.setItem(side.dir, side.isMinimized);
         div.innerHTML = side.isMinimized ? '+' : '&mdash;';
-        Debug.resize();
+        this.resize();
     }
 
     /**
@@ -620,7 +626,7 @@ class Debug
         var side = e.currentTarget.offsetParent.side;
         var div = side.minimized.pop();
         localStorage.setItem(div.side.dir + '-' + div.name, 'false');
-        Debug.resize();
+        this.resize();
     }
 
     /**
@@ -660,12 +666,12 @@ class Debug
                 }
             }
         }
-        Debug.resize();
+        this.resize();
     }
 
     /**
      * resize individual side
-     * @param {object} side returned by Debug._getSide()
+     * @param {object} side returned by this._getSide()
      * @private
      */
     _resizeSide(side)
@@ -677,7 +683,7 @@ class Debug
                 var panel = side.panels[name];
                 panel.style.display = 'none';
             }
-            if (Debug._isBottom(side))
+            if (this._isBottom(side))
             {
                 side.minimize.style.bottom = window.innerHeight / 4 + 'px';
             }
@@ -716,18 +722,18 @@ class Debug
                     var parent = div.options.parent;
                     div.style.top = parent.style.top;
                     div.style.bottom = parent.style.bottom;
-                    if (Debug._isLeft(parent.side))
+                    if (this._isLeft(parent.side))
                     {
-                        div.style.left = (parent.offsetLeft + parent.offsetWidth + Debug.padding) + 'px';
+                        div.style.left = (parent.offsetLeft + parent.offsetWidth + this.padding) + 'px';
                     }
                     else
                     {
-                        div.style.right = (window.innerWidth - parent.offsetLeft + Debug.padding) + 'px';
+                        div.style.right = (window.innerWidth - parent.offsetLeft + this.padding) + 'px';
                     }
                 }
                 else
                 {
-                    if (Debug._isBottom(side))
+                    if (this._isBottom(side))
                     {
                         div.style.bottom = current + 'px';
                         div.style.top = '';
@@ -737,7 +743,7 @@ class Debug
                         div.style.top = current + 'px';
                         div.style.bottom = '';
                     }
-                    if (Debug._isLeft(side))
+                    if (this._isLeft(side))
                     {
                         div.style.left = '0px';
                         div.style.right = '';
@@ -778,7 +784,7 @@ class Debug
     }
 
     /**
-     * @param {object} side returned by Debug._getSide
+     * @param {object} side returned by this._getSide
      * @return {boolean} whether on the left side
      */
     _isLeft(side)
@@ -787,7 +793,7 @@ class Debug
     }
 
     /**
-     * @param {object} side returned by Debug._getSide
+     * @param {object} side returned by this._getSide
      * @return {boolean} whether on the bottom side
      */
     _isBottom(side)
@@ -804,7 +810,7 @@ class Debug
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
         if (code === 96)
         {
-            Debug._handleClick({currentTarget: Debug.defaultDiv});
+            this._handleClick({currentTarget: this.defaultDiv});
         }
     }
 
@@ -815,7 +821,7 @@ class Debug
     _error(e)
     {
         console.error(e);
-        Debug.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
+        this.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
     }
 };
 
