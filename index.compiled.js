@@ -3,6 +3,7 @@
 /* globals setInterval, XMLHttpRequest, window, document */
 
 const Debug = require('@yy/debug');
+// const Debug = require('../debug/debug.js'); // for local testing
 
 Debug.init({color: 'rgba(180,150,150,0.5)'});
 
@@ -65,12 +66,9 @@ window.onload = function()
     Copyright (c) 2016 YOPEY YOPEY LLC
 */
 
-/**
- * @class
- */
+/** @class */
 class Debug
 {
-    /** @constructor */
     constructor()
     {
         this.defaultDiv = null;
@@ -706,16 +704,12 @@ class Debug
         }
         else
         {
-            if (div.options.expandable && !div.expanded)
+            if (div.options.expandable)
             {
-                div.expanded = true;
+                div.expanded = !div.expanded;
             }
             else
             {
-                if (div.options.expandable)
-                {
-                    div.expanded = false;
-                }
                 var index = div.side.minimized.indexOf(div);
                 if (index === -1)
                 {

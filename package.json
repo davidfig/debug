@@ -1,5 +1,5 @@
 {
-  "name": "@yy/debugdemo",
+  "name": "debugdemo",
   "version": "1.0.0",
   "description": "debug panels for javascript apps (designed specifically for game development)",
   "main": "index.html",
@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "browserify index.js > index.compiled.js"
+    "install": "browserify index.js > index.compiled.js",
+    "watch": "watchify index.js -vo index.compiled.js"
   },
   "repository": {
     "type": "git",
