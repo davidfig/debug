@@ -380,21 +380,25 @@ class Debug
     }
 
     /**
+     * @param {string} dir to check
+     */
+    _checkResize(dir)
+    {
+        if (this.sides[dir].minimize)
+        {
+            this._resizeSide(this.sides[dir]);
+        }
+    }
+
+    /**
      * resize all panels
      */
     resize()
     {
-        function side(dir)
-        {
-            if (this.sides[dir].minimize)
-            {
-                this._resizeSide(this.sides[dir]);
-            }
-        }
-        side('leftBottom');
-        side('rightBottom');
-        side('leftTop');
-        side('rightTop');
+        this._checkResize('leftBottom');
+        this._checkResize('rightBottom');
+        this._checkResize('leftTop');
+        this._checkResize('rightTop');
     }
 
     /**

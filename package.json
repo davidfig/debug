@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/davidfig/debug#readme",
   "dependencies": {
-    "pixi.js": "^4.0.1"
   },
   "devDependencies": {
     "jsdoc-to-markdown": "^1.3.7"
