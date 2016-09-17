@@ -35,9 +35,9 @@ class Debug
         options.expandable = options.expandable || 0.5;
         this.padding = options.panel || 7;
         this.defaultColor = options.color || 'rgba(150,150,150,0.5)';
-        window.addEventListener('resize', this.resize);
-        window.addEventListener('error', this._error);
-        document.addEventListener('keypress', this._keypress);
+        window.addEventListener('resize', this.resize.bind(this));
+        window.addEventListener('error', this._error.bind(this));
+        document.addEventListener('keypress', this._keypress.bind(this));
         return this.add('debug', options);
     }
 
@@ -596,8 +596,8 @@ class Debug
      */
     _click(div, isLeft)
     {
-        div.addEventListener('click', div.click);
-        div.addEventListener('touchstart', div.click);
+        div.addEventListener('click', div.click.bind(this));
+        div.addEventListener('touchstart', div.click.bind(this));
         div.style.pointerEvents = 'auto';
         div.isLeft = isLeft;
     }
