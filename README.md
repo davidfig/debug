@@ -1,5 +1,5 @@
 ## debug.js
-debug panels for javascript apps (designed for game development)
+debug panels for javascript apps (particularly useful for game development)
 
 ## Code Example
 
@@ -17,78 +17,232 @@ debug panels for javascript apps (designed for game development)
     setInterval(function () {
         var FPS = Math.random() * 60;
 
-        // changes the meter
+        // adds a meter line
         Debug.meter(Math.random() * 2 - 1, {panel: meter});
 
-        // changes all text in the FPS panel
+        // replaces all HTML in FPS panel
         Debug.one(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
     }, 60);
 
     Debug.add('testing', {text: 'this is another panel.'});
 
-## Live Example
-https://davidfig.github.io/debug/
+# API Reference
+**Kind**: global class  
 
-see also
+* [Debug](#Debug)
+    * [.init(options)](#Debug+init) ⇒ <code>HTMLElement</code>
+    * [.changeSide(div, side)](#Debug+changeSide)
+    * [.add(name, options, [expandable], [default], [size], [style], [text], [parent])](#Debug+add) ⇒ <code>HTMLElement</code>
+    * [.addMeter(name, [options], [width], [height])](#Debug+addMeter) ⇒ <code>HTMLElement</code>
+    * [.meter(percent, options)](#Debug+meter)
+    * [.addLink(name, link, [options], [width], [height], [style])](#Debug+addLink) ⇒ <code>HTMLElement</code>
+    * [.log(text, [options])](#Debug+log)
+    * [.one(text)](#Debug+one)
+    * [.caller(options)](#Debug+caller)
+    * [.get(name)](#Debug+get) ⇒ <code>HTMLElement</code>
+    * [.resize()](#Debug+resize)
+    * [._isLeft(side)](#Debug+_isLeft) ⇒ <code>boolean</code>
+    * [._isBottom(side)](#Debug+_isBottom) ⇒ <code>boolean</code>
+    * [._keypress(e)](#Debug+_keypress)
+    * [._error(e)](#Debug+_error)
 
-* https://davidfig.github.io/update/
-* https://davidfig.github.io/animate/
-* https://davidfig.github.io/renderer/
-* https://davidfig.github.io/viewport/
+<a name="Debug+init"></a>
 
-## Installation
-include debug.js in your project or add to your workflow
+### debug.init(options) ⇒ <code>HTMLElement</code>
+initialize the debug panels (must be called before adding panels)
 
-    <script src="debug.js"></script>
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>HTMLElement</code> - div where panel was created  
 
-## API Reference
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| options | <code>object</code> |  |  |
+| [options.padding] | <code>number</code> | <code>7</code> | between parent panels |
+| [options.color] | <code>string</code> | <code>&quot;&#x27;rgba(150,150,150,0.5)&#x27;&quot;</code> | default CSS background color for panels may also include options for the default debug panel (see Debug.add() for a list of options) |
 
-### Debug.init(options)
-initializes Debug and creates default debug panel
-options for the default panel (see Debug.add())
-attaches to the following events:
-     window.resize: resizes panels
-     window.error: shows error in the default panel
-     document.keypress: captures ` key to change size of default panel
+<a name="Debug+changeSide"></a>
 
-### Debug.add(name, options)
-Adds a debug panel
-options {}
- side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
- expandable: 0 (default) or percent size to expand
- default: if true then this panel becomes default for calls to debug and debugOne
- size: 0 (default) or percent size
+### debug.changeSide(div, side)
+change side of an existing panel
 
-###Debug.addMeter(name, options)
-Adds a meter panel
-* options {}
-  - side: 'leftBottom' (default), 'leftTop', 'rightBottom', 'rightTop'
-  - width: defaults to 100px
-  - height: default to 25px
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
 
-###Debug.meter(percent, options)
-updates the meter
+| Param | Type | Description |
+| --- | --- | --- |
+| div | <code>HTMLElement</code> | panel returned by Debug |
+| side | <code>string</code> |  |
+
+<a name="Debug+add"></a>
+
+### debug.add(name, options, [expandable], [default], [size], [style], [text], [parent]) ⇒ <code>HTMLElement</code>
+add debug panel
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>HTMLElement</code> - div where panel was created  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> |  | of panel |
+| options | <code>object</code> |  |  |
+| [options.side] | <code>string</code> | <code>&quot;&#x27;rightBottom&#x27;&quot;</code> | 'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop' |
+| [expandable] | <code>number</code> | <code>0</code> | or percent size to expand |
+| [default] | <code>boolean</code> | <code>false</code> | if true then this panel replaces default for calls to debug and debugOne |
+| [size] | <code>number</code> | <code>0</code> | if > 0 then this is the percent size of panel |
+| [style] | <code>object</code> |  | CSS styles for the panel |
+| [text] | <code>string</code> |  | starting text |
+| [parent] | <code>string</code> |  | attach to another panel (to the left or right, depending on the side of the panel) |
+
+<a name="Debug+addMeter"></a>
+
+### debug.addMeter(name, [options], [width], [height]) ⇒ <code>HTMLElement</code>
+creates a meter (useful for FPS)
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>HTMLElement</code> - div where panel was created  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> |  | of meter |
+| [options] | <code>object</code> |  |  |
+| [options.side] | <code>string</code> | <code>&quot;=&#x27;leftBottom&#x27;&quot;</code> | 'leftBottom', 'leftTop', 'rightBottom', 'rightTop' |
+| [width] | <code>number</code> | <code>100</code> | in pixels |
+| [height] | <code>number</code> | <code>25</code> | in pixels |
+
+<a name="Debug+meter"></a>
+
+### debug.meter(percent, options)
 adds a line to the end of the meter and scrolls the meter as necessary
-* percent: between -1 to +1
-* options {}
-  - name: name of panel
-  - panel: panel returned from Debug.Add()
+must provide either an options.name or options.panel
 
-###Debug.debug(text, options) or debug(text, options)
-adds text to the end of a panel and scrolls the panel
-* options {}
-  - color: background color for text
-  - name: name of panel
-  - panel: panel returned from Debug.Add()
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
 
-###Debug.debugOne(text, options) or debugOne(text, options)
+| Param | Type | Description |
+| --- | --- | --- |
+| percent | <code>number</code> | between -1 and +1 |
+| options | <code>object</code> |  |
+| [options.name] | <code>string</code> | of panel to add the line |
+| [options.panel] | <code>object</code> | div of panel as returned by Debug.add() |
+
+<a name="Debug+addLink"></a>
+
+### debug.addLink(name, link, [options], [width], [height], [style]) ⇒ <code>HTMLElement</code>
+adds a panel with a browser link
+note: this panel cannot be individually minimized
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>HTMLElement</code> - div where panel was created  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> |  |  |
+| link | <code>string</code> |  |  |
+| [options] | <code>object</code> |  |  |
+| [options.side] | <code>string</code> | <code>&quot;=&#x27;leftBottom&#x27;&quot;</code> | 'leftBottom', 'leftTop', 'rightBottom', 'rightTop' |
+| [width] | <code>number</code> | <code>100</code> | in pixels |
+| [height] | <code>number</code> | <code>25</code> | in pixels |
+| [style] | <code>object</code> |  | additional css styles to apply to link |
+
+<a name="Debug+log"></a>
+
+### debug.log(text, [options])
+adds text to the end of in the panel and scrolls the panel
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| text | <code>Array.&lt;string&gt;</code> &#124; <code>string</code> |  | may be an array or you can include multiple strings: text1, text2, text3, [options] |
+| [options] | <code>object</code> |  |  |
+| [options.color] | <code>string</code> |  | background color for text (in CSS) |
+| [options.name] | <code>string</code> |  | of panel |
+| [options.panel] | <code>HTMLElement</code> |  | returned from Debug.Add() |
+| [options.console] | <code>boolean</code> | <code>false</code> | print to console instead of panel (useful for fast updating messages) |
+
+<a name="Debug+one"></a>
+
+### debug.one(text)
 replaces all text in the panel
-* options {}
-  - name: name of panel
-  - panel: panel returned from Debug.Add()
 
-###Debug.caller(options)
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| text | <code>Array.&lt;string&gt;</code> &#124; <code>string</code> | may be an array or you can include multiple strings: text1, text2, text3, [options] |
+| [options.name] | <code>string</code> | of panel |
+| [options.panel] | <code>HTMLElement</code> | returned from Debug.Add() |
+
+<a name="Debug+caller"></a>
+
+### debug.caller(options)
 adds a debug message showing who called the function
 
-## License
-MIT License (MIT)
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | (see Debug.debug) |
+
+<a name="Debug+get"></a>
+
+### debug.get(name) ⇒ <code>HTMLElement</code>
+returns a panel based on its name
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>HTMLElement</code> - panel or null if not found  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | of panel |
+
+<a name="Debug+resize"></a>
+
+### debug.resize()
+resize all panels
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+<a name="Debug+_isLeft"></a>
+
+### debug._isLeft(side) ⇒ <code>boolean</code>
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>boolean</code> - whether on the left side  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| side | <code>object</code> | returned by Debug._getSide |
+
+<a name="Debug+_isBottom"></a>
+
+### debug._isBottom(side) ⇒ <code>boolean</code>
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+**Returns**: <code>boolean</code> - whether on the bottom side  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| side | <code>object</code> | returned by Debug._getSide |
+
+<a name="Debug+_keypress"></a>
+
+### debug._keypress(e)
+handler for ` key used to expand default debug box
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type |
+| --- | --- |
+| e | <code>Event</code> | 
+
+<a name="Debug+_error"></a>
+
+### debug._error(e)
+handler for errors
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type |
+| --- | --- |
+| e | <code>Event</code> | 
+
+
+* * *
+
+Copyright (c) 2016 YOPEY YOPEY LLC - MIT License - Documented by [jsdoc-to-markdown](https://github.com/75lb/jsdoc-to-markdown)

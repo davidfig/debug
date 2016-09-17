@@ -1,0 +1,39 @@
+## debug.js
+debug panels for javascript apps (particularly useful for game development)
+
+## Code Example
+
+    // initialize the library
+    Debug.init();
+
+    // send a message to the default panel created in the init()
+    Debug.log('This is a test message.');
+
+    // add an FPS panel and meter
+    var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
+    var meter = Debug.addMeter('panel', {side: 'rightBottom'});
+
+    // update the FPS
+    setInterval(function () {
+        var FPS = Math.random() * 60;
+
+        // adds a meter line
+        Debug.meter(Math.random() * 2 - 1, {panel: meter});
+
+        // replaces all HTML in FPS panel
+        Debug.one(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
+    }, 60);
+
+    Debug.add('testing', {text: 'this is another panel.'});
+
+# API Reference
+{{#class name="Debug"}}
+{{>body~}}
+{{>member-index~}}
+{{>separator~}}
+{{>members~}}
+{{/class}}
+
+* * *
+
+Copyright (c) 2016 YOPEY YOPEY LLC - MIT License - Documented by [jsdoc-to-markdown](https://github.com/75lb/jsdoc-to-markdown)
