@@ -41,7 +41,7 @@ see also
 ## Installation
 include debug.js in your project or add to your workflow
 
-    npm install --save davidfig/debug
+    npm install yy-debug
 
 # API Reference
 **Kind**: global class  
