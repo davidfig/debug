@@ -2,8 +2,7 @@
 // for eslint
 /* globals setInterval, XMLHttpRequest, window, document */
 
-const Debug = require('@yy/debug');
-// const Debug = require('../debug/debug.js'); // for local testing
+const Debug = require('yy-debug');
 
 Debug.init({color: 'rgba(180,150,150,0.5)'});
 
@@ -57,836 +56,7 @@ window.onload = function()
     };
     client.send();
 };
-},{"@yy/debug":2,"highlight.js":4}],2:[function(require,module,exports){
-/*
-    Debug panels for javascript
-    debug.js <https://github.com/davidfig/debug>
-    Released under MIT license <https://github.com/davidfig/debug/blob/master/LICENSE>
-    Author: David Figatner
-    Copyright (c) 2016 YOPEY YOPEY LLC
-*/
-
-/** @class */
-class Debug
-{
-    constructor()
-    {
-        this.defaultDiv = null;
-        this.sides = {
-            'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
-            'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
-            'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
-            'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
-        };
-    }
-
-    /**
-     * initialize the debug panels (must be called before adding panels)
-     * options may also include options for the default debug panel (see this.add() for a list of these options)
-     * @param {object} [options]
-     * @param {number} [options.padding=7] between parent panels
-     * @param {string} [options.color='rgba(150,150,150,0.5)'] - default CSS background color for panels
-     * @return {HTMLElement} div where panel was created
-     */
-    init(options)
-    {
-        options = options || {};
-        options.size = options.size || 0.25;
-        options.expandable = options.expandable || 0.5;
-        this.padding = options.panel || 7;
-        this.defaultColor = options.color || 'rgba(150,150,150,0.5)';
-        window.addEventListener('resize', this.resize);
-        window.addEventListener('error', this._error);
-        document.addEventListener('keypress', this._keypress);
-        return this.add('debug', options);
-    }
-
-    /**
-     * change side of an existing panel
-     * @param {HTMLElement} div - panel returned by Debug
-     * @param {string} side
-     */
-    changeSide(div, sideName)
-    {
-        // remove from old side
-        const panels = div.side.panels;
-        delete panels[div.name];
-        this._resizeSide(div.side);
-
-        // add to new side
-        const side = this._getSide({side: sideName});
-        this._minimizeCreate(side);
-        side.panels[div.name] = div;
-        div.side = side;
-        this._resizeSide(side);
-    }
-
-    /**
-     * add debug panel
-     * @param {string} name of panel
-     * @param {object} [options]
-     * @param {string} [options.side='rightBottom']  'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
-     * @param {number} [options.expandable=0] or percent size to expand
-     * @param {boolean} [options.default=false] if true then this panel replaces default for calls to debug and debugOne
-     * @param {number} [options.size=0] if > 0 then this is the percent size of panel
-     * @param {object} [style] - CSS styles for the panel
-     * @param {string} [text] - starting text
-     * @param {string} [parent] - attach to another panel (to the left or right, depending on the side of the panel)
-     * @return {HTMLElement} div where panel was created
-     */
-    add(name, options)
-    {
-        options = options || {};
-        const div = document.createElement('div');
-        document.body.appendChild(div);
-        div.name = name;
-        div.options = options;
-        if (!this.defaultDiv || options.default)
-        {
-            this.defaultDiv = div;
-        }
-        const side = this._getSide(options);
-        const s = div.style;
-        s.fontFamily = 'Helvetica Neue';
-        s.position = 'fixed';
-        if (this._isLeft(side))
-        {
-            s.left = 0;
-        }
-        else
-        {
-            s.right = 0;
-        }
-        if (options.style)
-        {
-            for (let key in options.style)
-            {
-                s[key] = options.style[key];
-            }
-        }
-        this._minimizeCreate(side);
-        div.side = side;
-        side.panels[name] = div;
-        this._style(div, side);
-        div.click = this._handleClick;
-        this._click(div);
-        if (options.text)
-        {
-            div.innerHTML = options.text;
-        }
-        if (localStorage.getItem(side.dir + '-' + name) === 'true')
-        {
-            side.minimized.push(div);
-        }
-        this.resize();
-        return div;
-    }
-
-    /**
-     * creates a meter (useful for FPS)
-     * @param {string} name of meter
-     * @param {object} [options]
-     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
-     * @param {number} [options.width=100] in pixels
-     * @param {number} [options.height=25] in pixels
-     * @return {HTMLElement} div where panel was created
-     */
-    addMeter(name, options)
-    {
-        options = options || {};
-        const div = document.createElement('canvas');
-        div.type = 'meter';
-        div.width = options.width || 100;
-        div.height = options.height || 25;
-        div.style.width = div.width + 'px';
-        div.style.height = div.height + 'px';
-        document.body.appendChild(div);
-        div.name = name;
-        div.options = options;
-        const side = this._getSide(options);
-        const s = div.style;
-        s.fontFamily = 'Helvetica Neue';
-        s.position = 'fixed';
-        if (this._isLeft(side))
-        {
-            s.left = 0;
-        }
-        else
-        {
-            s.right = 0;
-        }
-        this._minimizeCreate(side);
-        div.side = side;
-        side.panels[name] = div;
-        this._style(div, side);
-        div.click = this._handleClick;
-        this._click(div);
-        if (options.text)
-        {
-            div.innerHTML = options.text;
-        }
-        this.resize();
-        return div;
-    }
-
-    /**
-     * adds a line to the end of the meter and scrolls the meter as necessary
-     * must provide either an options.name or options.panel
-     * @param {number} percent - between -1 and +1
-     * @param {object} [options]
-     * @param {string} [options.name] of panel to add the line
-     * @param {object} [options.panel] - div of panel as returned by this.add()
-     */
-    meter(percent, options)
-    {
-        options = options || {};
-        const div = this._getDiv(options);
-        const c = div.getContext('2d');
-        const data = c.getImageData(0, 0, div.width, div.height);
-        c.putImageData(data, -1, 0);
-        c.clearRect(div.width - 1, 0, div.width - 1, div.height);
-        const middle = Math.round(div.height / 2);
-        let height;
-        if (percent < 0)
-        {
-            c.fillStyle = 'red';
-            percent = Math.abs(percent);
-            height = (25 - middle) * -percent;
-            c.fillRect(div.width - 1, middle, div.width - 1, middle + height);
-        }
-        else
-        {
-            c.fillStyle = 'white';
-            height = middle * percent;
-            c.fillRect(div.width - 1, height, div.width - 1, middle - height);
-        }
-    }
-
-    /**
-     * adds a panel with a browser link
-     * note: this panel cannot be individually minimized
-     * @param {string} name
-     * @param {string} link
-     * @param {object} [options]
-     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
-     * @param {number} [options.width=100] in pixels
-     * @param {number} [options.height=25] in pixels
-     * @param {object} [options.style] - additional css styles to apply to link
-     * @return {HTMLElement} div where panel was created
-     */
-    addLink(name, link, options)
-    {
-        options = options || {};
-        var div = document.createElement('div');
-        document.body.appendChild(div);
-        div.type = 'link';
-        div.name = name;
-        div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
-        div.options = options;
-        var side = this._getSide(options);
-        var s = div.style;
-        s.fontFamily = 'Helvetica Neue';
-        s.position = 'fixed';
-        if (this._isLeft(side))
-        {
-            s.left = 0;
-        }
-        else
-        {
-            s.right = 0;
-        }
-        if (options.style)
-        {
-            for (var key in options.style)
-            {
-                s[key] = options.style[key];
-            }
-        }
-        this._minimizeCreate(side);
-        div.side = side;
-        side.panels[name] = div;
-        this._style(div, side);
-        div.click = this._handleClick;
-        this._click(div);
-        this.resize();
-        return div;
-    }
-
-    /**
-     * adds text to the end of in the panel and scrolls the panel
-     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
-     * @param {object} [options]
-     * @param {string} [options.color] background color for text (in CSS)
-     * @param {string} [options.name] of panel
-     * @param {HTMLElement} [options.panel] returned from this.Add()
-     * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
-     */
-    log()
-    {
-        var decoded = this._decode(arguments);
-        var text = decoded.text;
-        var options = decoded.options || {};
-        if (options.console)
-        {
-            var result = '';
-            for (var i = 0; i < text.length; i++)
-            {
-                result += text[i] + ((i !== text.length -1) ? ', ' : '');
-            }
-            console.log(result);
-            return;
-        }
-        var div = this._getDiv(options);
-        if (options.color)
-        {
-            div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
-        }
-        else
-        {
-            div.style.backgroundColor = this.defaultColor;
-        }
-        var result = '<p style="pointer-events: none">';
-        if (text.length === 0)
-        {
-            result += 'null';
-        }
-        else
-        {
-            for (var i = 0; i < text.length; i++)
-            {
-                result += text[i] + ((i !== text.length -1) ? ', ' : '');
-            }
-        }
-        result += '</p>';
-        div.innerHTML += result;
-        div.scrollTop = div.scrollHeight;
-        if (options.color === 'error')
-        {
-            this.defaultDiv.expanded = true;
-            this.resize();
-        }
-    }
-
-    /**
-     * replaces all text in the panel
-     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
-     * @param {string} [options.name] of panel, defaults to defaultDiv
-     * @param {HTMLElement} [options.panel] returned from this.Add()
-     */
-    one()
-    {
-        var decoded = this._decode(arguments);
-        var text = decoded.text || [];
-        var options = decoded.options || {};
-        var div = this._getDiv(options);
-        if (options.color)
-        {
-            div.style.backgroundColor = options.color;
-        }
-        else
-        {
-            div.style.backgroundColor = this.defaultColor;
-        }
-        var html = '<span style="pointer-events: none">';
-        if (text.length === 0)
-        {
-            html += 'null';
-        }
-        else
-        {
-            for (var i = 0; i < text.length; i++)
-            {
-                html += text[i] + ((i !== text.length -1) ? ', ' : '');
-            }
-        }
-        html += '</span>';
-        div.innerHTML = html;
-    }
-
-    /**
-     * adds a debug message showing who called the function
-     * @param {object} [options] (see this.debug)
-     */
-    caller(options)
-    {
-        if (arguments.callee.caller)
-        {
-            this.log('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
-        }
-        else
-        {
-            this.log('Called by: top level', options);
-        }
-    }
-
-    /**
-     * returns a panel based on its name
-     * @param {string} name of panel
-     * @return {HTMLElement} panel or null if not found
-     */
-    get(name)
-    {
-        for (var side in this.sides)
-        {
-            if (this.sides[side].panels[name])
-            {
-                return this.sides[side].panels[name];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @param {string} dir to check
-     */
-    _checkResize(dir)
-    {
-        if (this.sides[dir].minimize)
-        {
-            this._resizeSide(this.sides[dir]);
-        }
-    }
-
-    /**
-     * resize all panels
-     */
-    resize()
-    {
-        this._checkResize('leftBottom');
-        this._checkResize('rightBottom');
-        this._checkResize('leftTop');
-        this._checkResize('rightTop');
-    }
-
-    /**
-     * converts side string to proper case and ordering for comparison
-     * @params {object} options - as provided to this.add...()
-     * @private
-     */
-    _getSide(options)
-    {
-        if (options.parent)
-        {
-            return options.parent.side;
-        }
-        const side = options.side;
-        if (!side)
-        {
-            return this.sides['rightBottom'];
-        }
-        const change = side.toUpperCase();
-        if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
-        {
-            return this.sides['leftBottom'];
-        }
-        else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
-        {
-            return this.sides['rightBottom'];
-        }
-        else if (change === 'LEFTTOP' || change === 'TOPLEFT')
-        {
-            return this.sides['leftTop'];
-        }
-        else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
-        {
-            return this.sides['rightTop'];
-        }
-        else
-        {
-            return this.sides['rightBottom'];
-        }
-    }
-
-    /**
-     * returns correct div based on options
-     * @private
-     */
-    _getDiv(options)
-    {
-        var div;
-        if (!options.panel && !options.name)
-        {
-            div = this.defaultDiv;
-        }
-        else if (options.panel)
-        {
-            div = options.panel;
-        }
-        else
-        {
-            for (var name in this.sides)
-            {
-                var panel = this.sides[name].panels[options.name];
-                if (panel)
-                {
-                    div = panel;
-                    break;
-                }
-            }
-        }
-        if (!div)
-        {
-            div = this.defaultDiv;
-        }
-        return div;
-    }
-
-    /**
-     * decodes this.log or this.one parameters
-     * @param {Array} args
-     * @private
-     */
-    _decode(args)
-    {
-        var options, text = [], i;
-
-        // handle old style where first argument can be an array
-        if (Array.isArray(args[0]))
-        {
-            text = args[0];
-            i = 1;
-        }
-        else
-        {
-            i = 0;
-        }
-        for (; i < args.length; i++)
-        {
-            // last one may be options
-            if (i === args.length - 1)
-            {
-                if (typeof args[i] === 'object' && args[i] !== null && !Array.isArray(arguments[i]))
-                {
-                    options = args[i];
-                }
-                else
-                {
-                    text.push(args[i]);
-                }
-            }
-            else
-            {
-                text.push(args[i]);
-            }
-        }
-        return {text: text, options: options};
-    }
-
-    /**
-     * creates a default style for a div
-     * @param {HTMLElement} div
-     * @param {object} side
-     * @private
-     */
-    _style(div, side)
-    {
-        var s = div.style;
-        s.fontFamily = 'Helvetica Neue';
-        s.position = 'fixed';
-        s.background = this.defaultColor;
-        s.color = 'white';
-        s.margin = 0;
-        s.padding = '5px';
-        s.boxShadow = (this._isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
-        s.cursor = 'pointer';
-        s.wordWrap = 'break-word';
-        s.overflow = 'auto';
-        s.zIndex = 1000;
-    }
-
-    /**
-     * creates the minimize button when adding the first panel for that side
-     * @param {object} side
-     * @private
-     */
-    _minimizeCreate(side)
-    {
-        if (side.minimize)
-        {
-            return;
-        }
-        var div = document.createElement('div');
-        div.options = {};
-        document.body.appendChild(div);
-        var s = div.style;
-        div.side = side;
-        if (this._isLeft(side))
-        {
-            s.left = 0;
-        }
-        else
-        {
-            s.right = 0;
-        }
-        this._style(div, side);
-        s.backgroundColor = 'transparent';
-        s.boxShadow = null;
-        s.padding = 0;
-        side.minimize = div;
-        var minimize = document.createElement('span');
-        var count = document.createElement('span');
-        minimize.click = this._handleMinimize;
-        count.click = this._handleCount;
-        if (this._isLeft(side))
-        {
-            div.appendChild(minimize);
-            div.appendChild(count);
-            count.style.marginLeft = '20px';
-        }
-        else
-        {
-            div.appendChild(count);
-            div.appendChild(minimize);
-            count.style.marginRight = '20px';
-        }
-        count.style.background = minimize.style.background = this.defaultColor;
-        count.style.boxShadow = minimize.style.boxShadow = (this._isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
-        minimize.innerHTML = side.isMinimized ? '+' : '&mdash;';
-        count.style.display = 'none';
-        side.count = count;
-        this._click(side.count, this._isLeft);
-        this._click(minimize, this._isLeft);
-    }
-
-    /**
-     * event listener for panels
-     * @param {HTMLElement} div
-     * @param {boolean} isLeft
-     * @private
-     */
-    _click(div, isLeft)
-    {
-        div.addEventListener('click', div.click);
-        div.addEventListener('touchstart', div.click);
-        div.style.pointerEvents = 'auto';
-        div.isLeft = isLeft;
-    }
-
-    /**
-     * minimizes panel
-     * @param {Event} e
-     * @private
-     */
-    _handleMinimize(e)
-    {
-        var div = e.currentTarget;
-        var side = e.currentTarget.offsetParent.side;
-        side.isMinimized = !side.isMinimized;
-        window.localStorage.setItem(side.dir, side.isMinimized);
-        div.innerHTML = side.isMinimized ? '+' : '&mdash;';
-        this.resize();
-    }
-
-    /**
-     * provides count to display next to minimize button
-     * @param {Event} e
-     * @private
-     */
-    _handleCount(e)
-    {
-        var side = e.currentTarget.offsetParent.side;
-        var div = side.minimized.pop();
-        localStorage.setItem(div.side.dir + '-' + div.name, 'false');
-        this.resize();
-    }
-
-    /**
-     * handler for click
-     * @param {Event} e
-     * @private
-     */
-    _handleClick(e)
-    {
-        var div = e.currentTarget;
-        if (div.type === 'link')
-        {
-            return;
-        }
-        else
-        {
-            if (div.options.expandable)
-            {
-                div.expanded = !div.expanded;
-            }
-            else
-            {
-                var index = div.side.minimized.indexOf(div);
-                if (index === -1)
-                {
-                    div.side.minimized.push(div);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'true');
-                }
-                else
-                {
-                    div.side.minimized.splice(index, 1);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
-                }
-            }
-        }
-        this.resize();
-    }
-
-    /**
-     * resize individual side
-     * @param {object} side returned by this._getSide()
-     * @private
-     */
-    _resizeSide(side)
-    {
-        if (side.isMinimized)
-        {
-            for (var name in side.panels)
-            {
-                var panel = side.panels[name];
-                panel.style.display = 'none';
-            }
-            if (this._isBottom(side))
-            {
-                side.minimize.style.bottom = window.innerHeight / 4 + 'px';
-            }
-            else
-            {
-                side.minimize.style.top = window.innerHeight / 4 + 'px';
-            }
-            side.count.style.display = 'none';
-        }
-        else
-        {
-            var count = 0;
-            var divs = [];
-            for (var name in side.panels)
-            {
-                var panel = side.panels[name];
-                if (side.minimized.indexOf(panel) === -1)
-                {
-                    panel.style.display = 'block';
-                    divs.push(panel);
-                }
-                else
-                {
-                    panel.style.display = 'none';
-                    count++;
-                }
-            }
-            divs.push(side.minimize);
-            var max = Math.min(window.innerWidth, window.innerHeight);
-            var current = 0;
-            for (var i = 0; i < divs.length; i++)
-            {
-                var div = divs[i];
-                if (div.options.parent && (side.minimized.indexOf(div.options.parent) === -1))
-                {
-                    var parent = div.options.parent;
-                    div.style.top = parent.style.top;
-                    div.style.bottom = parent.style.bottom;
-                    if (this._isLeft(parent.side))
-                    {
-                        div.style.left = (parent.offsetLeft + parent.offsetWidth + this.padding) + 'px';
-                    }
-                    else
-                    {
-                        div.style.right = (window.innerWidth - parent.offsetLeft + this.padding) + 'px';
-                    }
-                }
-                else
-                {
-                    if (this._isBottom(side))
-                    {
-                        div.style.bottom = current + 'px';
-                        div.style.top = '';
-                    }
-                    else
-                    {
-                        div.style.top = current + 'px';
-                        div.style.bottom = '';
-                    }
-                    if (this._isLeft(side))
-                    {
-                        div.style.left = '0px';
-                        div.style.right = '';
-                    }
-                    else
-                    {
-                        div.style.right = '0px';
-                        div.style.left = '';
-                    }
-                    if (div.options.size)
-                    {
-                        var size;
-                        if (div.options.expandable)
-                        {
-                            size = max * (div.expanded ? div.options.expandable : div.options.size);
-                        }
-                        else
-                        {
-                            size = max * div.options.size;
-                        }
-                        div.style.width = div.style.height = size + 'px';
-                        div.style.display = 'block';
-                    }
-                    div.scrollTop = div.scrollHeight;
-                    current += 10 + div.offsetHeight;
-                }
-            }
-            if (count === 0)
-            {
-                side.count.style.display = 'none';
-            }
-            else
-            {
-                side.count.style.display = 'inline';
-                side.count.innerHTML = count;
-            }
-        }
-    }
-
-    /**
-     * @param {object} side returned by this._getSide
-     * @return {boolean} whether on the left side
-     */
-    _isLeft(side)
-    {
-        return side.dir.indexOf('left') !== -1;
-    }
-
-    /**
-     * @param {object} side returned by this._getSide
-     * @return {boolean} whether on the bottom side
-     */
-    _isBottom(side)
-    {
-        return side.dir.indexOf('Bottom') !== -1;
-    }
-
-    /**
-     * handler for ` key used to expand default debug box
-     * @param {Event} e
-     */
-    _keypress(e)
-    {
-        var code = (typeof e.which === 'number') ? e.which : e.keyCode;
-        if (code === 96)
-        {
-            this._handleClick({currentTarget: this.defaultDiv});
-        }
-    }
-
-    /**
-     * handler for errors
-     * @param {Event} e
-     */
-    _error(e)
-    {
-        console.error(e);
-        this.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
-    }
-};
-
-module.exports = new Debug();
-
-// for eslint
-/* global document, localStorage, window, console */
-},{}],3:[function(require,module,exports){
+},{"highlight.js":3,"yy-debug":170}],2:[function(require,module,exports){
 /*
 Syntax highlighting with language autodetection.
 https://highlightjs.org/
@@ -1706,7 +876,7 @@ https://highlightjs.org/
   return hljs;
 }));
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var hljs = require('./highlight');
 
 hljs.registerLanguage('1c', require('./languages/1c'));
@@ -1877,7 +1047,7 @@ hljs.registerLanguage('xquery', require('./languages/xquery'));
 hljs.registerLanguage('zephir', require('./languages/zephir'));
 
 module.exports = hljs;
-},{"./highlight":3,"./languages/1c":5,"./languages/abnf":6,"./languages/accesslog":7,"./languages/actionscript":8,"./languages/ada":9,"./languages/apache":10,"./languages/applescript":11,"./languages/arduino":12,"./languages/armasm":13,"./languages/asciidoc":14,"./languages/aspectj":15,"./languages/autohotkey":16,"./languages/autoit":17,"./languages/avrasm":18,"./languages/awk":19,"./languages/axapta":20,"./languages/bash":21,"./languages/basic":22,"./languages/bnf":23,"./languages/brainfuck":24,"./languages/cal":25,"./languages/capnproto":26,"./languages/ceylon":27,"./languages/clojure":29,"./languages/clojure-repl":28,"./languages/cmake":30,"./languages/coffeescript":31,"./languages/coq":32,"./languages/cos":33,"./languages/cpp":34,"./languages/crmsh":35,"./languages/crystal":36,"./languages/cs":37,"./languages/csp":38,"./languages/css":39,"./languages/d":40,"./languages/dart":41,"./languages/delphi":42,"./languages/diff":43,"./languages/django":44,"./languages/dns":45,"./languages/dockerfile":46,"./languages/dos":47,"./languages/dsconfig":48,"./languages/dts":49,"./languages/dust":50,"./languages/ebnf":51,"./languages/elixir":52,"./languages/elm":53,"./languages/erb":54,"./languages/erlang":56,"./languages/erlang-repl":55,"./languages/excel":57,"./languages/fix":58,"./languages/fortran":59,"./languages/fsharp":60,"./languages/gams":61,"./languages/gauss":62,"./languages/gcode":63,"./languages/gherkin":64,"./languages/glsl":65,"./languages/go":66,"./languages/golo":67,"./languages/gradle":68,"./languages/groovy":69,"./languages/haml":70,"./languages/handlebars":71,"./languages/haskell":72,"./languages/haxe":73,"./languages/hsp":74,"./languages/htmlbars":75,"./languages/http":76,"./languages/inform7":77,"./languages/ini":78,"./languages/irpf90":79,"./languages/java":80,"./languages/javascript":81,"./languages/json":82,"./languages/julia":83,"./languages/kotlin":84,"./languages/lasso":85,"./languages/ldif":86,"./languages/less":87,"./languages/lisp":88,"./languages/livecodeserver":89,"./languages/livescript":90,"./languages/lsl":91,"./languages/lua":92,"./languages/makefile":93,"./languages/markdown":94,"./languages/mathematica":95,"./languages/matlab":96,"./languages/maxima":97,"./languages/mel":98,"./languages/mercury":99,"./languages/mipsasm":100,"./languages/mizar":101,"./languages/mojolicious":102,"./languages/monkey":103,"./languages/moonscript":104,"./languages/nginx":105,"./languages/nimrod":106,"./languages/nix":107,"./languages/nsis":108,"./languages/objectivec":109,"./languages/ocaml":110,"./languages/openscad":111,"./languages/oxygene":112,"./languages/parser3":113,"./languages/perl":114,"./languages/pf":115,"./languages/php":116,"./languages/pony":117,"./languages/powershell":118,"./languages/processing":119,"./languages/profile":120,"./languages/prolog":121,"./languages/protobuf":122,"./languages/puppet":123,"./languages/purebasic":124,"./languages/python":125,"./languages/q":126,"./languages/qml":127,"./languages/r":128,"./languages/rib":129,"./languages/roboconf":130,"./languages/rsl":131,"./languages/ruby":132,"./languages/ruleslanguage":133,"./languages/rust":134,"./languages/scala":135,"./languages/scheme":136,"./languages/scilab":137,"./languages/scss":138,"./languages/smali":139,"./languages/smalltalk":140,"./languages/sml":141,"./languages/sqf":142,"./languages/sql":143,"./languages/stan":144,"./languages/stata":145,"./languages/step21":146,"./languages/stylus":147,"./languages/subunit":148,"./languages/swift":149,"./languages/taggerscript":150,"./languages/tap":151,"./languages/tcl":152,"./languages/tex":153,"./languages/thrift":154,"./languages/tp":155,"./languages/twig":156,"./languages/typescript":157,"./languages/vala":158,"./languages/vbnet":159,"./languages/vbscript":161,"./languages/vbscript-html":160,"./languages/verilog":162,"./languages/vhdl":163,"./languages/vim":164,"./languages/x86asm":165,"./languages/xl":166,"./languages/xml":167,"./languages/xquery":168,"./languages/yaml":169,"./languages/zephir":170}],5:[function(require,module,exports){
+},{"./highlight":2,"./languages/1c":4,"./languages/abnf":5,"./languages/accesslog":6,"./languages/actionscript":7,"./languages/ada":8,"./languages/apache":9,"./languages/applescript":10,"./languages/arduino":11,"./languages/armasm":12,"./languages/asciidoc":13,"./languages/aspectj":14,"./languages/autohotkey":15,"./languages/autoit":16,"./languages/avrasm":17,"./languages/awk":18,"./languages/axapta":19,"./languages/bash":20,"./languages/basic":21,"./languages/bnf":22,"./languages/brainfuck":23,"./languages/cal":24,"./languages/capnproto":25,"./languages/ceylon":26,"./languages/clojure":28,"./languages/clojure-repl":27,"./languages/cmake":29,"./languages/coffeescript":30,"./languages/coq":31,"./languages/cos":32,"./languages/cpp":33,"./languages/crmsh":34,"./languages/crystal":35,"./languages/cs":36,"./languages/csp":37,"./languages/css":38,"./languages/d":39,"./languages/dart":40,"./languages/delphi":41,"./languages/diff":42,"./languages/django":43,"./languages/dns":44,"./languages/dockerfile":45,"./languages/dos":46,"./languages/dsconfig":47,"./languages/dts":48,"./languages/dust":49,"./languages/ebnf":50,"./languages/elixir":51,"./languages/elm":52,"./languages/erb":53,"./languages/erlang":55,"./languages/erlang-repl":54,"./languages/excel":56,"./languages/fix":57,"./languages/fortran":58,"./languages/fsharp":59,"./languages/gams":60,"./languages/gauss":61,"./languages/gcode":62,"./languages/gherkin":63,"./languages/glsl":64,"./languages/go":65,"./languages/golo":66,"./languages/gradle":67,"./languages/groovy":68,"./languages/haml":69,"./languages/handlebars":70,"./languages/haskell":71,"./languages/haxe":72,"./languages/hsp":73,"./languages/htmlbars":74,"./languages/http":75,"./languages/inform7":76,"./languages/ini":77,"./languages/irpf90":78,"./languages/java":79,"./languages/javascript":80,"./languages/json":81,"./languages/julia":82,"./languages/kotlin":83,"./languages/lasso":84,"./languages/ldif":85,"./languages/less":86,"./languages/lisp":87,"./languages/livecodeserver":88,"./languages/livescript":89,"./languages/lsl":90,"./languages/lua":91,"./languages/makefile":92,"./languages/markdown":93,"./languages/mathematica":94,"./languages/matlab":95,"./languages/maxima":96,"./languages/mel":97,"./languages/mercury":98,"./languages/mipsasm":99,"./languages/mizar":100,"./languages/mojolicious":101,"./languages/monkey":102,"./languages/moonscript":103,"./languages/nginx":104,"./languages/nimrod":105,"./languages/nix":106,"./languages/nsis":107,"./languages/objectivec":108,"./languages/ocaml":109,"./languages/openscad":110,"./languages/oxygene":111,"./languages/parser3":112,"./languages/perl":113,"./languages/pf":114,"./languages/php":115,"./languages/pony":116,"./languages/powershell":117,"./languages/processing":118,"./languages/profile":119,"./languages/prolog":120,"./languages/protobuf":121,"./languages/puppet":122,"./languages/purebasic":123,"./languages/python":124,"./languages/q":125,"./languages/qml":126,"./languages/r":127,"./languages/rib":128,"./languages/roboconf":129,"./languages/rsl":130,"./languages/ruby":131,"./languages/ruleslanguage":132,"./languages/rust":133,"./languages/scala":134,"./languages/scheme":135,"./languages/scilab":136,"./languages/scss":137,"./languages/smali":138,"./languages/smalltalk":139,"./languages/sml":140,"./languages/sqf":141,"./languages/sql":142,"./languages/stan":143,"./languages/stata":144,"./languages/step21":145,"./languages/stylus":146,"./languages/subunit":147,"./languages/swift":148,"./languages/taggerscript":149,"./languages/tap":150,"./languages/tcl":151,"./languages/tex":152,"./languages/thrift":153,"./languages/tp":154,"./languages/twig":155,"./languages/typescript":156,"./languages/vala":157,"./languages/vbnet":158,"./languages/vbscript":160,"./languages/vbscript-html":159,"./languages/verilog":161,"./languages/vhdl":162,"./languages/vim":163,"./languages/x86asm":164,"./languages/xl":165,"./languages/xml":166,"./languages/xquery":167,"./languages/yaml":168,"./languages/zephir":169}],4:[function(require,module,exports){
 module.exports = function(hljs){
   var IDENT_RE_RU = '[a-zA-Zа-яА-Я][a-zA-Z0-9_а-яА-Я]*';
   var OneS_KEYWORDS = 'возврат дата для если и или иначе иначеесли исключение конецесли ' +
@@ -1956,7 +1126,7 @@ module.exports = function(hljs){
     ]
   };
 };
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function(hljs) {
     var regexes = {
         ruleDeclaration: "^[a-zA-Z][a-zA-Z0-9-]*",
@@ -2027,7 +1197,7 @@ module.exports = function(hljs) {
       ]
     };
 };
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -2065,7 +1235,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE = '[a-zA-Z_$][a-zA-Z0-9_$]*';
   var IDENT_FUNC_RETURN_TYPE_RE = '([*]|[a-zA-Z_$][a-zA-Z0-9_$]*)';
@@ -2139,7 +1309,7 @@ module.exports = function(hljs) {
     illegal: /#/
   };
 };
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = // We try to support full Ada2012
 //
 // We highlight all appearances of types, keywords, literals (string, char, number, bool)
@@ -2312,7 +1482,7 @@ function(hljs) {
         ]
     };
 };
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function(hljs) {
   var NUMBER = {className: 'number', begin: '[\\$%]\\d+'};
   return {
@@ -2358,7 +1528,7 @@ module.exports = function(hljs) {
     illegal: /\S/
   };
 };
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function(hljs) {
   var STRING = hljs.inherit(hljs.QUOTE_STRING_MODE, {illegal: ''});
   var PARAMS = {
@@ -2444,7 +1614,7 @@ module.exports = function(hljs) {
     illegal: '//|->|=>|\\[\\['
   };
 };
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = function(hljs) {
   var CPP = hljs.getLanguage('cpp').exports;
 	return {
@@ -2544,7 +1714,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = function(hljs) {
     //local labels: %?[FB]?[AT]?\d{1,2}\w+
   return {
@@ -2636,7 +1806,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['adoc'],
@@ -2824,7 +1994,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function (hljs) {
   var KEYWORDS =
     'false synchronized int abstract float private char boolean static null if const ' +
@@ -2968,7 +2138,7 @@ module.exports = function (hljs) {
     ]
   };
 };
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function(hljs) {
   var BACKTICK_ESCAPE = {
     begin: /`[\s\S]/
@@ -3016,7 +2186,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = function(hljs) {
     var KEYWORDS = 'ByRef Case Const ContinueCase ContinueLoop ' +
         'Default Dim Do Else ElseIf EndFunc EndIf EndSelect ' +
@@ -3152,7 +2322,7 @@ module.exports = function(hljs) {
         ]
     }
 };
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -3214,7 +2384,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = function(hljs) {
   var VARIABLE = {
     className: 'variable',
@@ -3267,7 +2437,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: 'false int abstract private char boolean static null if for true ' +
@@ -3298,7 +2468,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function(hljs) {
   var VAR = {
     className: 'variable',
@@ -3373,7 +2543,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -3424,7 +2594,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = function(hljs){
   return {
     contains: [
@@ -3453,7 +2623,7 @@ module.exports = function(hljs){
     ]
   };
 };
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = function(hljs){
   var LITERAL = {
     className: 'literal',
@@ -3490,7 +2660,7 @@ module.exports = function(hljs){
     ]
   };
 };
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS =
     'div mod in and or not xor asserterror begin case do downto else end exit for if of repeat then to ' +
@@ -3570,7 +2740,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['capnp'],
@@ -3619,7 +2789,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = function(hljs) {
   // 2.3. Identifiers and keywords
   var KEYWORDS =
@@ -3686,7 +2856,7 @@ module.exports = function(hljs) {
     ].concat(EXPRESSIONS)
   };
 };
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -3701,7 +2871,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function(hljs) {
   var keywords = {
     'builtin-name':
@@ -3796,7 +2966,7 @@ module.exports = function(hljs) {
     contains: [LIST, STRING, HINT, HINT_COL, COMMENT, KEY, COLLECTION, NUMBER, LITERAL]
   }
 };
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['cmake.in'],
@@ -3834,7 +3004,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -3973,7 +3143,7 @@ module.exports = function(hljs) {
     ])
   };
 };
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -4040,7 +3210,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = function cos (hljs) {
 
   var STRINGS = {
@@ -4164,7 +3334,7 @@ module.exports = function cos (hljs) {
     ]
   };
 };
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = function(hljs) {
   var CPP_PRIMITIVE_TYPES = {
     className: 'keyword',
@@ -4330,7 +3500,7 @@ module.exports = function(hljs) {
     }
   };
 };
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = function(hljs) {
   var RESOURCES = 'primitive rsc_template';
 
@@ -4424,7 +3594,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],36:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = function(hljs) {
   var NUM_SUFFIX = '(_[uif](8|16|32|64))?';
   var CRYSTAL_IDENT_RE = '[a-zA-Z_]\\w*[!?=]?';
@@ -4601,7 +3771,7 @@ module.exports = function(hljs) {
     contains: CRYSTAL_DEFAULT_CONTAINS
   };
 };
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -4768,7 +3938,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: false,
@@ -4790,7 +3960,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],39:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE = '[a-zA-Z-][a-zA-Z0-9_-]*';
   var RULE = {
@@ -4895,7 +4065,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],40:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = /**
  * Known issues:
  *
@@ -5153,7 +4323,7 @@ function(hljs) {
     ]
   };
 };
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = function (hljs) {
   var SUBST = {
     className: 'subst',
@@ -5254,7 +4424,7 @@ module.exports = function (hljs) {
     ]
   }
 };
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS =
     'exports register file shl array record property for mod while set ally label uses raise not ' +
@@ -5322,7 +4492,7 @@ module.exports = function(hljs) {
     ].concat(COMMENT_MODES)
   };
 };
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['patch'],
@@ -5362,7 +4532,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 module.exports = function(hljs) {
   var FILTER = {
     begin: /\|[A-Za-z]+:?/,
@@ -5426,7 +4596,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['bind', 'zone'],
@@ -5455,7 +4625,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['docker'],
@@ -5484,7 +4654,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMENT = hljs.COMMENT(
     /^\s*@?rem\b/, /$/,
@@ -5536,7 +4706,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],48:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 module.exports = function(hljs) {
   var QUOTED_PROPERTY = {
     className: 'string',
@@ -5583,7 +4753,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],49:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = function(hljs) {
   var STRINGS = {
     className: 'string',
@@ -5707,7 +4877,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],50:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = function(hljs) {
   var EXPRESSION_KEYWORDS = 'if eq ne lt lte gt gte select default math sep';
   return {
@@ -5739,7 +4909,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],51:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = function(hljs) {
     var commentMode = hljs.COMMENT(/\(\*/, /\*\)/);
 
@@ -5772,7 +4942,7 @@ module.exports = function(hljs) {
         ]
     };
 };
-},{}],52:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 module.exports = function(hljs) {
   var ELIXIR_IDENT_RE = '[a-zA-Z_][a-zA-Z0-9_]*(\\!|\\?)?';
   var ELIXIR_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]\\@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~`|]|\\[\\]=?';
@@ -5869,7 +5039,7 @@ module.exports = function(hljs) {
     contains: ELIXIR_DEFAULT_CONTAINS
   };
 };
-},{}],53:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMENT = {
     variants: [
@@ -5952,7 +5122,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],54:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     subLanguage: 'xml',
@@ -5967,7 +5137,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],55:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -6013,7 +5183,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],56:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 module.exports = function(hljs) {
   var BASIC_ATOM_RE = '[a-z\'][a-zA-Z0-9_\']*';
   var FUNCTION_NAME_RE = '(' + BASIC_ATOM_RE + ':' + BASIC_ATOM_RE + '|' + BASIC_ATOM_RE + ')';
@@ -6159,7 +5329,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['xlsx', 'xls'],
@@ -6207,7 +5377,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],58:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -6236,7 +5406,7 @@ module.exports = function(hljs) {
     case_insensitive: true
   };
 };
-},{}],59:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 module.exports = function(hljs) {
   var PARAMS = {
     className: 'params',
@@ -6307,7 +5477,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],60:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 module.exports = function(hljs) {
   var TYPEPARAM = {
     begin: '<', end: '>',
@@ -6366,7 +5536,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 module.exports = function (hljs) {
   var KEYWORDS = {
     'keyword':
@@ -6520,7 +5690,7 @@ module.exports = function (hljs) {
     ]
   };
 };
-},{}],62:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword: 'and bool break call callexe checkinterrupt clear clearg closeall cls comlog compile ' +
@@ -6742,7 +5912,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],63:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 module.exports = function(hljs) {
     var GCODE_IDENT_RE = '[A-Z_][A-Z0-9_.]*';
     var GCODE_CLOSE_RE = '\\%';
@@ -6809,7 +5979,7 @@ module.exports = function(hljs) {
         ].concat(GCODE_CODE)
     };
 };
-},{}],64:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 module.exports = function (hljs) {
   return {
     aliases: ['feature'],
@@ -6846,7 +6016,7 @@ module.exports = function (hljs) {
     ]
   };
 };
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -6963,7 +6133,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],66:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 module.exports = function(hljs) {
   var GO_KEYWORDS = {
     keyword:
@@ -7017,7 +6187,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],67:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 module.exports = function(hljs) {
     return {
       keywords: {
@@ -7040,7 +6210,7 @@ module.exports = function(hljs) {
       ]
     }
 };
-},{}],68:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -7075,7 +6245,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],69:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 module.exports = function(hljs) {
     return {
         keywords: {
@@ -7169,7 +6339,7 @@ module.exports = function(hljs) {
         illegal: /#|<\//
     }
 };
-},{}],70:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = // TODO support filter tags like :javascript, support inline HTML
 function(hljs) {
   return {
@@ -7276,7 +6446,7 @@ function(hljs) {
     ]
   };
 };
-},{}],71:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 module.exports = function(hljs) {
   var BUILT_INS = {'builtin-name': 'each in with if else unless bindattr action collection debugger log outlet template unbound view yield'};
   return {
@@ -7310,7 +6480,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],72:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMENT = {
     variants: [
@@ -7432,7 +6602,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],73:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE = '[a-zA-Z_$][a-zA-Z0-9_$]*';
   var IDENT_FUNC_RETURN_TYPE_RE = '([*]|[a-zA-Z_$][a-zA-Z0-9_$]*)';
@@ -7490,7 +6660,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],74:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -7536,7 +6706,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],75:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 module.exports = function(hljs) {
   var BUILT_INS = 'action collection component concat debugger each each-in else get hash if input link-to loc log mut outlet partial query-params render textarea unbound unless with yield view';
 
@@ -7607,7 +6777,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],76:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 module.exports = function(hljs) {
   var VERSION = 'HTTP/[0-9\\.]+';
   return {
@@ -7648,7 +6818,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],77:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = function(hljs) {
   var START_BRACKET = '\\[';
   var END_BRACKET = '\\]';
@@ -7705,7 +6875,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],78:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 module.exports = function(hljs) {
   var STRING = {
     className: "string",
@@ -7771,7 +6941,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],79:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 module.exports = function(hljs) {
   var PARAMS = {
     className: 'params',
@@ -7847,7 +7017,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],80:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 module.exports = function(hljs) {
   var GENERIC_IDENT_RE = hljs.UNDERSCORE_IDENT_RE + '(<' + hljs.UNDERSCORE_IDENT_RE + '(\\s*,\\s*' + hljs.UNDERSCORE_IDENT_RE + ')*>)?';
   var KEYWORDS =
@@ -7954,7 +7124,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],81:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['js', 'jsx'],
@@ -8068,7 +7238,7 @@ module.exports = function(hljs) {
     illegal: /#(?!!)/
   };
 };
-},{}],82:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = function(hljs) {
   var LITERALS = {literal: 'true false null'};
   var TYPES = [
@@ -8105,7 +7275,7 @@ module.exports = function(hljs) {
     illegal: '\\S'
   };
 };
-},{}],83:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 module.exports = function(hljs) {
   // Since there are numerous special names in Julia, it is too much trouble
   // to maintain them by hand. Hence these names (i.e. keywords, literals and
@@ -8283,7 +7453,7 @@ module.exports = function(hljs) {
 
   return DEFAULT;
 };
-},{}],84:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 module.exports = function (hljs) {
   var KEYWORDS = {
     keyword:
@@ -8457,7 +7627,7 @@ module.exports = function (hljs) {
     ]
   };
 };
-},{}],85:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 module.exports = function(hljs) {
   var LASSO_IDENT_RE = '[a-zA-Z_][\\w.]*';
   var LASSO_ANGLE_RE = '<\\?(lasso(script)?|=)';
@@ -8620,7 +7790,7 @@ module.exports = function(hljs) {
     ].concat(LASSO_CODE)
   };
 };
-},{}],86:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -8643,7 +7813,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],87:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE        = '[\\w-]+'; // yes, Less identifiers may begin with a digit
   var INTERP_IDENT_RE = '(' + IDENT_RE + '|@{' + IDENT_RE + '})';
@@ -8783,7 +7953,7 @@ module.exports = function(hljs) {
     contains: RULES
   };
 };
-},{}],88:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 module.exports = function(hljs) {
   var LISP_IDENT_RE = '[a-zA-Z_\\-\\+\\*\\/\\<\\=\\>\\&\\#][a-zA-Z0-9_\\-\\+\\*\\/\\<\\=\\>\\&\\#!]*';
   var MEC_RE = '\\|[^]*?\\|';
@@ -8886,7 +8056,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],89:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 module.exports = function(hljs) {
   var VARIABLE = {
     begin: '\\b[gtps][A-Z]+[A-Za-z0-9_\\-]*\\b|\\$_[A-Z]+',
@@ -9043,7 +8213,7 @@ module.exports = function(hljs) {
     illegal: ';$|^\\[|^=|&|{'
   };
 };
-},{}],90:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -9192,7 +8362,7 @@ module.exports = function(hljs) {
     ])
   };
 };
-},{}],91:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 module.exports = function(hljs) {
 
     var LSL_STRING_ESCAPE_CHARS = {
@@ -9275,7 +8445,7 @@ module.exports = function(hljs) {
         ]
     };
 };
-},{}],92:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 module.exports = function(hljs) {
   var OPENING_LONG_BRACKET = '\\[=*\\[';
   var CLOSING_LONG_BRACKET = '\\]=*\\]';
@@ -9331,7 +8501,7 @@ module.exports = function(hljs) {
     ])
   };
 };
-},{}],93:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 module.exports = function(hljs) {
   var VARIABLE = {
     className: 'variable',
@@ -9376,7 +8546,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],94:[function(require,module,exports){
+},{}],93:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['md', 'mkdown', 'mkd'],
@@ -9484,7 +8654,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],95:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['mma'],
@@ -9542,7 +8712,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],96:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMON_CONTAINS = [
     hljs.C_NUMBER_MODE,
@@ -9630,7 +8800,7 @@ module.exports = function(hljs) {
     ].concat(COMMON_CONTAINS)
   };
 };
-},{}],97:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = 'if then else elseif for thru do while unless step in and or not';
   var LITERALS = 'true false unknown inf minf ind und %e %i %pi %phi %gamma';
@@ -10036,7 +9206,7 @@ module.exports = function(hljs) {
     illegal: /@/
   }
 };
-},{}],98:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords:
@@ -10261,7 +9431,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],99:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -10343,7 +9513,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],100:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 module.exports = function(hljs) {
     //local labels: %?[FB]?[AT]?\d{1,2}\w+
   return {
@@ -10429,7 +9599,7 @@ module.exports = function(hljs) {
     illegal: '\/'
   };
 };
-},{}],101:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords:
@@ -10448,7 +9618,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],102:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     subLanguage: 'xml',
@@ -10473,7 +9643,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],103:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 module.exports = function(hljs) {
   var NUMBER = {
     className: 'number', relevance: 0,
@@ -10548,7 +9718,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],104:[function(require,module,exports){
+},{}],103:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -10660,7 +9830,7 @@ module.exports = function(hljs) {
     ])
   };
 };
-},{}],105:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 module.exports = function(hljs) {
   var VAR = {
     className: 'variable',
@@ -10753,7 +9923,7 @@ module.exports = function(hljs) {
     illegal: '[^\\s\\}]'
   };
 };
-},{}],106:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['nim'],
@@ -10808,7 +9978,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],107:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 module.exports = function(hljs) {
   var NIX_KEYWORDS = {
     keyword:
@@ -10857,7 +10027,7 @@ module.exports = function(hljs) {
     contains: EXPRESSIONS
   };
 };
-},{}],108:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 module.exports = function(hljs) {
   var CONSTANTS = {
     className: 'variable',
@@ -10943,7 +10113,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],109:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 module.exports = function(hljs) {
   var API_CLASS = {
     className: 'built_in',
@@ -11034,7 +10204,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],110:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 module.exports = function(hljs) {
   /* missing support for heredoc-like string (OCaml 4.0.2+) */
   return {
@@ -11105,7 +10275,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],111:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 module.exports = function(hljs) {
 	var SPECIAL_VARS = {
 		className: 'keyword',
@@ -11162,7 +10332,7 @@ module.exports = function(hljs) {
 		]
 	}
 };
-},{}],112:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 module.exports = function(hljs) {
   var OXYGENE_KEYWORDS = 'abstract add and array as asc aspect assembly async begin break block by case class concat const copy constructor continue '+
     'create default delegate desc distinct div do downto dynamic each else empty end ensure enum equals event except exit extension external false '+
@@ -11232,7 +10402,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],113:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 module.exports = function(hljs) {
   var CURLY_SUBCOMMENT = hljs.COMMENT(
     '{',
@@ -11280,7 +10450,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],114:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 module.exports = function(hljs) {
   var PERL_KEYWORDS = 'getpwent getservent quotemeta msgrcv scalar kill dbmclose undef lc ' +
     'ma syswrite tr send umask sysopen shmwrite vec qx utime local oct semctl localtime ' +
@@ -11437,7 +10607,7 @@ module.exports = function(hljs) {
     contains: PERL_DEFAULT_CONTAINS
   };
 };
-},{}],115:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 module.exports = function(hljs) {
   var MACRO = {
     className: 'variable',
@@ -11489,7 +10659,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],116:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 module.exports = function(hljs) {
   var VARIABLE = {
     begin: '\\$+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*'
@@ -11616,7 +10786,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],117:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -11707,7 +10877,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],118:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 module.exports = function(hljs) {
   var BACKTICK_ESCAPE = {
     begin: '`[\\s\\S]',
@@ -11788,7 +10958,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],119:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -11836,7 +11006,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],120:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -11866,7 +11036,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],121:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var ATOM = {
@@ -11954,7 +11124,7 @@ module.exports = function(hljs) {
     ])
   };
 };
-},{}],122:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -11990,7 +11160,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],123:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var PUPPET_KEYWORDS = {
@@ -12105,7 +11275,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],124:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 module.exports = // Base deafult colors in PB IDE: background: #FFFFDF; foreground: #000000;
 
 function(hljs) {
@@ -12163,7 +11333,7 @@ function(hljs) {
     ]
   };
 };
-},{}],125:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 module.exports = function(hljs) {
   var PROMPT = {
     className: 'meta',  begin: /^(>>>|\.\.\.) /
@@ -12255,7 +11425,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],126:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 module.exports = function(hljs) {
   var Q_KEYWORDS = {
   keyword:
@@ -12278,7 +11448,7 @@ module.exports = function(hljs) {
      ]
   };
 };
-},{}],127:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
       keyword:
@@ -12447,7 +11617,7 @@ module.exports = function(hljs) {
     illegal: /#/
   };
 };
-},{}],128:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE = '([a-zA-Z]|\\.[a-zA-Z.])[a-zA-Z0-9._]*';
 
@@ -12517,7 +11687,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],129:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords:
@@ -12544,7 +11714,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],130:[function(require,module,exports){
+},{}],129:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENTIFIER = '[a-zA-Z-_][^\\n{]+\\{';
 
@@ -12611,7 +11781,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],131:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -12647,7 +11817,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],132:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 module.exports = function(hljs) {
   var RUBY_METHOD_RE = '[a-zA-Z_]\\w*[!?=]?|[-+~]\\@|<<|>>|=~|===?|<=>|[<>]=?|\\*\\*|[-/+%^&*~`|]|\\[\\]=?';
   var RUBY_KEYWORDS = {
@@ -12820,7 +11990,7 @@ module.exports = function(hljs) {
     contains: COMMENT_MODES.concat(IRB_DEFAULT).concat(RUBY_DEFAULT_CONTAINS)
   };
 };
-},{}],133:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -12881,7 +12051,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],134:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 module.exports = function(hljs) {
   var NUM_SUFFIX = '([uif](8|16|32|64|size))\?';
   var BLOCK_COMMENT = hljs.inherit(hljs.C_BLOCK_COMMENT_MODE);
@@ -12987,7 +12157,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],135:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var ANNOTATION = { className: 'meta', begin: '@[A-Za-z]+' };
@@ -13102,7 +12272,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],136:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 module.exports = function(hljs) {
   var SCHEME_IDENT_RE = '[^\\(\\)\\[\\]\\{\\}",\'`;#|\\\\\\s]+';
   var SCHEME_SIMPLE_NUMBER_RE = '(\\-|\\+)?\\d+([./]\\d+)?';
@@ -13243,7 +12413,7 @@ module.exports = function(hljs) {
     contains: [SHEBANG, NUMBER, STRING, QUOTED_IDENT, QUOTED_LIST, LIST].concat(COMMENT_MODES)
   };
 };
-},{}],137:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var COMMON_CONTAINS = [
@@ -13297,7 +12467,7 @@ module.exports = function(hljs) {
     ].concat(COMMON_CONTAINS)
   };
 };
-},{}],138:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 module.exports = function(hljs) {
   var IDENT_RE = '[a-zA-Z-][a-zA-Z0-9_-]*';
   var VARIABLE = {
@@ -13395,7 +12565,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],139:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 module.exports = function(hljs) {
   var smali_instr_low_prio = ['add', 'and', 'cmp', 'cmpg', 'cmpl', 'const', 'div', 'double', 'float', 'goto', 'if', 'int', 'long', 'move', 'mul', 'neg', 'new', 'nop', 'not', 'or', 'rem', 'return', 'shl', 'shr', 'sput', 'sub', 'throw', 'ushr', 'xor'];
   var smali_instr_high_prio = ['aget', 'aput', 'array', 'check', 'execute', 'fill', 'filled', 'goto/16', 'goto/32', 'iget', 'instance', 'invoke', 'iput', 'monitor', 'packed', 'sget', 'sparse'];
@@ -13451,7 +12621,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],140:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 module.exports = function(hljs) {
   var VAR_IDENT_RE = '[a-z][a-zA-Z0-9_]*';
   var CHAR = {
@@ -13501,7 +12671,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],141:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['ml'],
@@ -13567,7 +12737,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],142:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 module.exports = function(hljs) {
   var CPP = hljs.getLanguage('cpp').exports;
 
@@ -14028,7 +13198,7 @@ module.exports = function(hljs) {
     illegal: /#/
   };
 };
-},{}],143:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMENT_MODE = hljs.COMMENT('--', '$');
   return {
@@ -14188,7 +13358,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],144:[function(require,module,exports){
+},{}],143:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     contains: [
@@ -14271,7 +13441,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],145:[function(require,module,exports){
+},{}],144:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['do', 'ado'],
@@ -14309,7 +13479,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],146:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 module.exports = function(hljs) {
   var STEP21_IDENT_RE = '[A-Z_][A-Z0-9_.]*';
   var STEP21_KEYWORDS = {
@@ -14356,7 +13526,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],147:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var VARIABLE = {
@@ -14810,7 +13980,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],148:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 module.exports = function(hljs) {
   var DETAILS = {
     className: 'string',
@@ -14844,7 +14014,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],149:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 module.exports = function(hljs) {
   var SWIFT_KEYWORDS = {
       keyword: '__COLUMN__ __FILE__ __FUNCTION__ __LINE__ as as! as? associativity ' +
@@ -14961,7 +14131,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],150:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 module.exports = function(hljs) {
 
   var COMMENT = {
@@ -15005,7 +14175,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],151:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -15041,7 +14211,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],152:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['tk'],
@@ -15102,7 +14272,7 @@ module.exports = function(hljs) {
     ]
   }
 };
-},{}],153:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 module.exports = function(hljs) {
   var COMMAND = {
     className: 'tag',
@@ -15164,7 +14334,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],154:[function(require,module,exports){
+},{}],153:[function(require,module,exports){
 module.exports = function(hljs) {
   var BUILT_IN_TYPES = 'bool byte i16 i32 i64 double string binary';
   return {
@@ -15199,7 +14369,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],155:[function(require,module,exports){
+},{}],154:[function(require,module,exports){
 module.exports = function(hljs) {
   var TPID = {
     className: 'number',
@@ -15283,7 +14453,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],156:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 module.exports = function(hljs) {
   var PARAMS = {
     className: 'params',
@@ -15349,7 +14519,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],157:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
@@ -15458,7 +14628,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],158:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     keywords: {
@@ -15508,7 +14678,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],159:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['vb'],
@@ -15564,7 +14734,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],160:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     subLanguage: 'xml',
@@ -15576,7 +14746,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],161:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     aliases: ['vbs'],
@@ -15615,7 +14785,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],162:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 module.exports = function(hljs) {
   var SV_KEYWORDS = {
     keyword:
@@ -15714,7 +14884,7 @@ module.exports = function(hljs) {
     ]
   }; // return
 };
-},{}],163:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 module.exports = function(hljs) {
   // Regular expression for VHDL numeric literals.
 
@@ -15770,7 +14940,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],164:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     lexemes: /[!#@\w]+/,
@@ -15876,7 +15046,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],165:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 module.exports = function(hljs) {
   return {
     case_insensitive: true,
@@ -16012,7 +15182,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],166:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 module.exports = function(hljs) {
   var BUILTIN_MODULES =
     'ObjectLoader Animate MovieCredits Slides Filters Shading Materials LensFlare Mapping VLCAudioVideo ' +
@@ -16085,7 +15255,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],167:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 module.exports = function(hljs) {
   var XML_IDENT_RE = '[A-Za-z0-9\\._:-]+';
   var TAG_INTERNALS = {
@@ -16188,7 +15358,7 @@ module.exports = function(hljs) {
     ]
   };
 };
-},{}],168:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 module.exports = function(hljs) {
   var KEYWORDS = 'for let if while then else return where group by xquery encoding version' +
     'module namespace boundary-space preserve strip default collation base-uri ordering' +
@@ -16259,7 +15429,7 @@ module.exports = function(hljs) {
     contains: CONTAINS
   };
 };
-},{}],169:[function(require,module,exports){
+},{}],168:[function(require,module,exports){
 module.exports = function(hljs) {
   var LITERALS = {literal: '{ } true false yes no Yes No True False null'};
 
@@ -16343,7 +15513,7 @@ module.exports = function(hljs) {
     keywords: LITERALS
   };
 };
-},{}],170:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 module.exports = function(hljs) {
   var STRING = {
     className: 'string',
@@ -16450,4 +15620,833 @@ module.exports = function(hljs) {
     ]
   };
 };
+},{}],170:[function(require,module,exports){
+/*
+    Debug panels for javascript
+    debug.js <https://github.com/davidfig/debug>
+    Released under MIT license <https://github.com/davidfig/debug/blob/master/LICENSE>
+    Author: David Figatner
+    Copyright (c) 2016 YOPEY YOPEY LLC
+*/
+
+/** @class */
+class Debug
+{
+    constructor()
+    {
+        this.defaultDiv = null;
+        this.sides = {
+            'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
+            'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
+            'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
+            'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
+        };
+    }
+
+    /**
+     * initialize the debug panels (must be called before adding panels)
+     * options may also include options for the default debug panel (see this.add() for a list of these options)
+     * @param {object} [options]
+     * @param {number} [options.padding=7] between parent panels
+     * @param {string} [options.color='rgba(150,150,150,0.5)'] - default CSS background color for panels
+     * @return {HTMLElement} div where panel was created
+     */
+    init(options)
+    {
+        options = options || {};
+        options.size = options.size || 0.25;
+        options.expandable = options.expandable || 0.5;
+        this.padding = options.panel || 7;
+        this.defaultColor = options.color || 'rgba(150,150,150,0.5)';
+        window.addEventListener('resize', this.resize.bind(this));
+        window.addEventListener('error', this._error.bind(this));
+        document.addEventListener('keypress', this._keypress.bind(this));
+        return this.add('debug', options);
+    }
+
+    /**
+     * change side of an existing panel
+     * @param {HTMLElement} div - panel returned by Debug
+     * @param {string} side
+     */
+    changeSide(div, sideName)
+    {
+        // remove from old side
+        const panels = div.side.panels;
+        delete panels[div.name];
+        this._resizeSide(div.side);
+
+        // add to new side
+        const side = this._getSide({side: sideName});
+        this._minimizeCreate(side);
+        side.panels[div.name] = div;
+        div.side = side;
+        this._resizeSide(side);
+    }
+
+    /**
+     * add debug panel
+     * @param {string} name of panel
+     * @param {object} [options]
+     * @param {string} [options.side='rightBottom']  'rightBottom' (default), 'leftBottom', 'leftTop', 'rightTop'
+     * @param {number} [options.expandable=0] or percent size to expand
+     * @param {boolean} [options.default=false] if true then this panel replaces default for calls to debug and debugOne
+     * @param {number} [options.size=0] if > 0 then this is the percent size of panel
+     * @param {object} [style] - CSS styles for the panel
+     * @param {string} [text] - starting text
+     * @param {string} [parent] - attach to another panel (to the left or right, depending on the side of the panel)
+     * @return {HTMLElement} div where panel was created
+     */
+    add(name, options)
+    {
+        options = options || {};
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+        div.name = name;
+        div.options = options;
+        if (!this.defaultDiv || options.default)
+        {
+            this.defaultDiv = div;
+        }
+        const side = this._getSide(options);
+        const s = div.style;
+        s.fontFamily = 'Helvetica Neue';
+        s.position = 'fixed';
+        if (this._isLeft(side))
+        {
+            s.left = 0;
+        }
+        else
+        {
+            s.right = 0;
+        }
+        if (options.style)
+        {
+            for (let key in options.style)
+            {
+                s[key] = options.style[key];
+            }
+        }
+        this._minimizeCreate(side);
+        div.side = side;
+        side.panels[name] = div;
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
+        if (options.text)
+        {
+            div.innerHTML = options.text;
+        }
+        if (localStorage.getItem(side.dir + '-' + name) === 'true')
+        {
+            side.minimized.push(div);
+        }
+        this.resize();
+        return div;
+    }
+
+    /**
+     * creates a meter (useful for FPS)
+     * @param {string} name of meter
+     * @param {object} [options]
+     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
+     * @param {number} [options.width=100] in pixels
+     * @param {number} [options.height=25] in pixels
+     * @return {HTMLElement} div where panel was created
+     */
+    addMeter(name, options)
+    {
+        options = options || {};
+        const div = document.createElement('canvas');
+        div.type = 'meter';
+        div.width = options.width || 100;
+        div.height = options.height || 25;
+        div.style.width = div.width + 'px';
+        div.style.height = div.height + 'px';
+        document.body.appendChild(div);
+        div.name = name;
+        div.options = options;
+        const side = this._getSide(options);
+        const s = div.style;
+        s.fontFamily = 'Helvetica Neue';
+        s.position = 'fixed';
+        if (this._isLeft(side))
+        {
+            s.left = 0;
+        }
+        else
+        {
+            s.right = 0;
+        }
+        this._minimizeCreate(side);
+        div.side = side;
+        side.panels[name] = div;
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
+        if (options.text)
+        {
+            div.innerHTML = options.text;
+        }
+        this.resize();
+        return div;
+    }
+
+    /**
+     * adds a line to the end of the meter and scrolls the meter as necessary
+     * must provide either an options.name or options.panel
+     * @param {number} percent - between -1 and +1
+     * @param {object} [options]
+     * @param {string} [options.name] of panel to add the line
+     * @param {object} [options.panel] - div of panel as returned by this.add()
+     */
+    meter(percent, options)
+    {
+        options = options || {};
+        const div = this._getDiv(options);
+        const c = div.getContext('2d');
+        const data = c.getImageData(0, 0, div.width, div.height);
+        c.putImageData(data, -1, 0);
+        c.clearRect(div.width - 1, 0, div.width - 1, div.height);
+        const middle = Math.round(div.height / 2);
+        let height;
+        if (percent < 0)
+        {
+            c.fillStyle = 'red';
+            percent = Math.abs(percent);
+            height = (25 - middle) * -percent;
+            c.fillRect(div.width - 1, middle, div.width - 1, middle + height);
+        }
+        else
+        {
+            c.fillStyle = 'white';
+            height = middle * percent;
+            c.fillRect(div.width - 1, height, div.width - 1, middle - height);
+        }
+    }
+
+    /**
+     * adds a panel with a browser link
+     * note: this panel cannot be individually minimized
+     * @param {string} name
+     * @param {string} link
+     * @param {object} [options]
+     * @param {string} [options.side=='leftBottom'] 'leftBottom', 'leftTop', 'rightBottom', 'rightTop'
+     * @param {number} [options.width=100] in pixels
+     * @param {number} [options.height=25] in pixels
+     * @param {object} [options.style] - additional css styles to apply to link
+     * @return {HTMLElement} div where panel was created
+     */
+    addLink(name, link, options)
+    {
+        options = options || {};
+        var div = document.createElement('div');
+        document.body.appendChild(div);
+        div.type = 'link';
+        div.name = name;
+        div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
+        div.options = options;
+        var side = this._getSide(options);
+        var s = div.style;
+        s.fontFamily = 'Helvetica Neue';
+        s.position = 'fixed';
+        if (this._isLeft(side))
+        {
+            s.left = 0;
+        }
+        else
+        {
+            s.right = 0;
+        }
+        if (options.style)
+        {
+            for (var key in options.style)
+            {
+                s[key] = options.style[key];
+            }
+        }
+        this._minimizeCreate(side);
+        div.side = side;
+        side.panels[name] = div;
+        this._style(div, side);
+        div.click = this._handleClick;
+        this._click(div);
+        this.resize();
+        return div;
+    }
+
+    /**
+     * adds text to the end of in the panel and scrolls the panel
+     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {object} [options]
+     * @param {string} [options.color] background color for text (in CSS)
+     * @param {string} [options.name] of panel
+     * @param {HTMLElement} [options.panel] returned from this.Add()
+     * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
+     */
+    log()
+    {
+        var decoded = this._decode(arguments);
+        var text = decoded.text;
+        var options = decoded.options || {};
+        if (options.console)
+        {
+            var result = '';
+            for (var i = 0; i < text.length; i++)
+            {
+                result += text[i] + ((i !== text.length -1) ? ', ' : '');
+            }
+            console.log(result);
+            return;
+        }
+        var div = this._getDiv(options);
+        if (options.color)
+        {
+            div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
+        }
+        else
+        {
+            div.style.backgroundColor = this.defaultColor;
+        }
+        var result = '<p style="pointer-events: none">';
+        if (text.length === 0)
+        {
+            result += 'null';
+        }
+        else
+        {
+            for (var i = 0; i < text.length; i++)
+            {
+                result += text[i] + ((i !== text.length -1) ? ', ' : '');
+            }
+        }
+        result += '</p>';
+        div.innerHTML += result;
+        div.scrollTop = div.scrollHeight;
+        if (options.color === 'error')
+        {
+            this.defaultDiv.expanded = true;
+            this.resize();
+        }
+    }
+
+    /**
+     * replaces all text in the panel
+     * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
+     * @param {string} [options.name] of panel, defaults to defaultDiv
+     * @param {HTMLElement} [options.panel] returned from this.Add()
+     */
+    one()
+    {
+        var decoded = this._decode(arguments);
+        var text = decoded.text || [];
+        var options = decoded.options || {};
+        var div = this._getDiv(options);
+        if (options.color)
+        {
+            div.style.backgroundColor = options.color;
+        }
+        else
+        {
+            div.style.backgroundColor = this.defaultColor;
+        }
+        var html = '<span style="pointer-events: none">';
+        if (text.length === 0)
+        {
+            html += 'null';
+        }
+        else
+        {
+            for (var i = 0; i < text.length; i++)
+            {
+                html += text[i] + ((i !== text.length -1) ? ', ' : '');
+            }
+        }
+        html += '</span>';
+        div.innerHTML = html;
+    }
+
+    /**
+     * adds a debug message showing who called the function
+     * @param {object} [options] (see this.debug)
+     */
+    caller(options)
+    {
+        if (arguments.callee.caller)
+        {
+            this.log('Called by: ' + arguments.callee.caller.arguments.callee.caller.name + ': ' + arguments.callee.caller.arguments.callee.caller.toString(), options);
+        }
+        else
+        {
+            this.log('Called by: top level', options);
+        }
+    }
+
+    /**
+     * returns a panel based on its name
+     * @param {string} name of panel
+     * @return {HTMLElement} panel or null if not found
+     */
+    get(name)
+    {
+        for (var side in this.sides)
+        {
+            if (this.sides[side].panels[name])
+            {
+                return this.sides[side].panels[name];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param {string} dir to check
+     */
+    _checkResize(dir)
+    {
+        if (this.sides[dir].minimize)
+        {
+            this._resizeSide(this.sides[dir]);
+        }
+    }
+
+    /**
+     * resize all panels
+     */
+    resize()
+    {
+        this._checkResize('leftBottom');
+        this._checkResize('rightBottom');
+        this._checkResize('leftTop');
+        this._checkResize('rightTop');
+    }
+
+    /**
+     * converts side string to proper case and ordering for comparison
+     * @params {object} options - as provided to this.add...()
+     * @private
+     */
+    _getSide(options)
+    {
+        if (options.parent)
+        {
+            return options.parent.side;
+        }
+        const side = options.side;
+        if (!side)
+        {
+            return this.sides['rightBottom'];
+        }
+        const change = side.toUpperCase();
+        if (change === 'LEFTBOTTOM' || change === 'BOTTOMLEFT')
+        {
+            return this.sides['leftBottom'];
+        }
+        else if (change === 'RIGHTBOTTOM' || change === 'BOTTOMRIGHT')
+        {
+            return this.sides['rightBottom'];
+        }
+        else if (change === 'LEFTTOP' || change === 'TOPLEFT')
+        {
+            return this.sides['leftTop'];
+        }
+        else if (change === 'RIGHTTOP' || change === 'TOPRIGHT')
+        {
+            return this.sides['rightTop'];
+        }
+        else
+        {
+            return this.sides['rightBottom'];
+        }
+    }
+
+    /**
+     * returns correct div based on options
+     * @private
+     */
+    _getDiv(options)
+    {
+        var div;
+        if (!options.panel && !options.name)
+        {
+            div = this.defaultDiv;
+        }
+        else if (options.panel)
+        {
+            div = options.panel;
+        }
+        else
+        {
+            for (var name in this.sides)
+            {
+                var panel = this.sides[name].panels[options.name];
+                if (panel)
+                {
+                    div = panel;
+                    break;
+                }
+            }
+        }
+        if (!div)
+        {
+            div = this.defaultDiv;
+        }
+        return div;
+    }
+
+    /**
+     * decodes this.log or this.one parameters
+     * @param {Array} args
+     * @private
+     */
+    _decode(args)
+    {
+        var options, text = [], i;
+
+        // handle old style where first argument can be an array
+        if (Array.isArray(args[0]))
+        {
+            text = args[0];
+            i = 1;
+        }
+        else
+        {
+            i = 0;
+        }
+        for (; i < args.length; i++)
+        {
+            // last one may be options
+            if (i === args.length - 1)
+            {
+                if (typeof args[i] === 'object' && args[i] !== null && !Array.isArray(arguments[i]))
+                {
+                    options = args[i];
+                }
+                else
+                {
+                    text.push(args[i]);
+                }
+            }
+            else
+            {
+                text.push(args[i]);
+            }
+        }
+        return {text: text, options: options};
+    }
+
+    /**
+     * creates a default style for a div
+     * @param {HTMLElement} div
+     * @param {object} side
+     * @private
+     */
+    _style(div, side)
+    {
+        var s = div.style;
+        s.fontFamily = 'Helvetica Neue';
+        s.position = 'fixed';
+        s.background = this.defaultColor;
+        s.color = 'white';
+        s.margin = 0;
+        s.padding = '5px';
+        s.boxShadow = (this._isLeft(side) ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
+        s.cursor = 'pointer';
+        s.wordWrap = 'break-word';
+        s.overflow = 'auto';
+        s.zIndex = 1000;
+    }
+
+    /**
+     * creates the minimize button when adding the first panel for that side
+     * @param {object} side
+     * @private
+     */
+    _minimizeCreate(side)
+    {
+        if (side.minimize)
+        {
+            return;
+        }
+        var div = document.createElement('div');
+        div.options = {};
+        document.body.appendChild(div);
+        var s = div.style;
+        div.side = side;
+        if (this._isLeft(side))
+        {
+            s.left = 0;
+        }
+        else
+        {
+            s.right = 0;
+        }
+        this._style(div, side);
+        s.backgroundColor = 'transparent';
+        s.boxShadow = null;
+        s.padding = 0;
+        side.minimize = div;
+        var minimize = document.createElement('span');
+        var count = document.createElement('span');
+        minimize.click = this._handleMinimize;
+        count.click = this._handleCount;
+        if (this._isLeft(side))
+        {
+            div.appendChild(minimize);
+            div.appendChild(count);
+            count.style.marginLeft = '20px';
+        }
+        else
+        {
+            div.appendChild(count);
+            div.appendChild(minimize);
+            count.style.marginRight = '20px';
+        }
+        count.style.background = minimize.style.background = this.defaultColor;
+        count.style.boxShadow = minimize.style.boxShadow = (this._isLeft ? '' : '-') + '5px -5px 10px rgba(0,0,0,0.25)';
+        minimize.innerHTML = side.isMinimized ? '+' : '&mdash;';
+        count.style.display = 'none';
+        side.count = count;
+        this._click(side.count, this._isLeft);
+        this._click(minimize, this._isLeft);
+    }
+
+    /**
+     * event listener for panels
+     * @param {HTMLElement} div
+     * @param {boolean} isLeft
+     * @private
+     */
+    _click(div, isLeft)
+    {
+        div.addEventListener('click', div.click.bind(this));
+        div.addEventListener('touchstart', div.click.bind(this));
+        div.style.pointerEvents = 'auto';
+        div.isLeft = isLeft;
+    }
+
+    /**
+     * minimizes panel
+     * @param {Event} e
+     * @private
+     */
+    _handleMinimize(e)
+    {
+        var div = e.currentTarget;
+        var side = e.currentTarget.offsetParent.side;
+        side.isMinimized = !side.isMinimized;
+        window.localStorage.setItem(side.dir, side.isMinimized);
+        div.innerHTML = side.isMinimized ? '+' : '&mdash;';
+        this.resize();
+    }
+
+    /**
+     * provides count to display next to minimize button
+     * @param {Event} e
+     * @private
+     */
+    _handleCount(e)
+    {
+        var side = e.currentTarget.offsetParent.side;
+        var div = side.minimized.pop();
+        localStorage.setItem(div.side.dir + '-' + div.name, 'false');
+        this.resize();
+    }
+
+    /**
+     * handler for click
+     * @param {Event} e
+     * @private
+     */
+    _handleClick(e)
+    {
+        var div = e.currentTarget;
+        if (div.type === 'link')
+        {
+            return;
+        }
+        else
+        {
+            if (div.options.expandable)
+            {
+                div.expanded = !div.expanded;
+            }
+            else
+            {
+                var index = div.side.minimized.indexOf(div);
+                if (index === -1)
+                {
+                    div.side.minimized.push(div);
+                    localStorage.setItem(div.side.dir + '-' + div.name, 'true');
+                }
+                else
+                {
+                    div.side.minimized.splice(index, 1);
+                    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
+                }
+            }
+        }
+        this.resize();
+    }
+
+    /**
+     * resize individual side
+     * @param {object} side returned by this._getSide()
+     * @private
+     */
+    _resizeSide(side)
+    {
+        if (side.isMinimized)
+        {
+            for (var name in side.panels)
+            {
+                var panel = side.panels[name];
+                panel.style.display = 'none';
+            }
+            if (this._isBottom(side))
+            {
+                side.minimize.style.bottom = window.innerHeight / 4 + 'px';
+            }
+            else
+            {
+                side.minimize.style.top = window.innerHeight / 4 + 'px';
+            }
+            side.count.style.display = 'none';
+        }
+        else
+        {
+            var count = 0;
+            var divs = [];
+            for (var name in side.panels)
+            {
+                var panel = side.panels[name];
+                if (side.minimized.indexOf(panel) === -1)
+                {
+                    panel.style.display = 'block';
+                    divs.push(panel);
+                }
+                else
+                {
+                    panel.style.display = 'none';
+                    count++;
+                }
+            }
+            divs.push(side.minimize);
+            var max = Math.min(window.innerWidth, window.innerHeight);
+            var current = 0;
+            for (var i = 0; i < divs.length; i++)
+            {
+                var div = divs[i];
+                if (div.options.parent && (side.minimized.indexOf(div.options.parent) === -1))
+                {
+                    var parent = div.options.parent;
+                    div.style.top = parent.style.top;
+                    div.style.bottom = parent.style.bottom;
+                    if (this._isLeft(parent.side))
+                    {
+                        div.style.left = (parent.offsetLeft + parent.offsetWidth + this.padding) + 'px';
+                    }
+                    else
+                    {
+                        div.style.right = (window.innerWidth - parent.offsetLeft + this.padding) + 'px';
+                    }
+                }
+                else
+                {
+                    if (this._isBottom(side))
+                    {
+                        div.style.bottom = current + 'px';
+                        div.style.top = '';
+                    }
+                    else
+                    {
+                        div.style.top = current + 'px';
+                        div.style.bottom = '';
+                    }
+                    if (this._isLeft(side))
+                    {
+                        div.style.left = '0px';
+                        div.style.right = '';
+                    }
+                    else
+                    {
+                        div.style.right = '0px';
+                        div.style.left = '';
+                    }
+                    if (div.options.size)
+                    {
+                        var size;
+                        if (div.options.expandable)
+                        {
+                            size = max * (div.expanded ? div.options.expandable : div.options.size);
+                        }
+                        else
+                        {
+                            size = max * div.options.size;
+                        }
+                        div.style.width = div.style.height = size + 'px';
+                        div.style.display = 'block';
+                    }
+                    div.scrollTop = div.scrollHeight;
+                    current += 10 + div.offsetHeight;
+                }
+            }
+            if (count === 0)
+            {
+                side.count.style.display = 'none';
+            }
+            else
+            {
+                side.count.style.display = 'inline';
+                side.count.innerHTML = count;
+            }
+        }
+    }
+
+    /**
+     * @param {object} side returned by this._getSide
+     * @return {boolean} whether on the left side
+     */
+    _isLeft(side)
+    {
+        return side.dir.indexOf('left') !== -1;
+    }
+
+    /**
+     * @param {object} side returned by this._getSide
+     * @return {boolean} whether on the bottom side
+     */
+    _isBottom(side)
+    {
+        return side.dir.indexOf('Bottom') !== -1;
+    }
+
+    /**
+     * handler for ` key used to expand default debug box
+     * @param {Event} e
+     */
+    _keypress(e)
+    {
+        var code = (typeof e.which === 'number') ? e.which : e.keyCode;
+        if (code === 96)
+        {
+            this._handleClick({currentTarget: this.defaultDiv});
+        }
+    }
+
+    /**
+     * handler for errors
+     * @param {Event} e
+     */
+    _error(e)
+    {
+        console.error(e);
+        this.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
+    }
+};
+
+module.exports = new Debug();
+
+// for eslint
+/* global document, localStorage, window, console */
 },{}]},{},[1]);
