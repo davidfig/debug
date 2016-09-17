@@ -6,12 +6,9 @@
     Copyright (c) 2016 YOPEY YOPEY LLC
 */
 
-/**
- * @class
- */
+/** @class */
 class Debug
 {
-    /** @constructor */
     constructor()
     {
         this.defaultDiv = null;
