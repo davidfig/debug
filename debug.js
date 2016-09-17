@@ -644,16 +644,12 @@ class Debug
         }
         else
         {
-            if (div.options.expandable && !div.expanded)
+            if (div.options.expandable)
             {
-                div.expanded = true;
+                div.expanded = !div.expanded;
             }
             else
             {
-                if (div.options.expandable)
-                {
-                    div.expanded = false;
-                }
                 var index = div.side.minimized.indexOf(div);
                 if (index === -1)
                 {
