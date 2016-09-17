@@ -1,5 +1,5 @@
 ## debug.js
-debug panels for javascript apps (particularly useful for game development)
+debug panels for javascript apps (designed for game development)
 
 ## Code Example
 
@@ -7,7 +7,7 @@ debug panels for javascript apps (particularly useful for game development)
     Debug.init();
 
     // send a message to the default panel created in the init()
-    debug('This is a test message.');
+    Debug.log('This is a test message.');
 
     // add an FPS panel and meter
     var fps = Debug.add('FPS', {text: '0 FPS', side: 'rightBottom'});
@@ -16,8 +16,12 @@ debug panels for javascript apps (particularly useful for game development)
     // update the FPS
     setInterval(function () {
         var FPS = Math.random() * 60;
+
+        // changes the meter
         Debug.meter(Math.random() * 2 - 1, {panel: meter});
-        debugOne(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
+
+        // changes all text in the FPS panel
+        Debug.one(Math.round(FPS) + ' FPS', {panel: fps, color: (FPS < 30 ? 'red' : null)});
     }, 60);
 
     Debug.add('testing', {text: 'this is another panel.'});

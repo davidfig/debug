@@ -7,17 +7,21 @@
 */
 
 /**
- * @module @yy/debug
+ * @class
  */
-const Debug = {
-
-    defaultDiv: null,
-    sides: {
-        'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
-        'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
-        'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
-        'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
-    },
+class Debug
+{
+    /** @constructor */
+    constructor()
+    {
+        this.defaultDiv = null;
+        this. sides = {
+            'leftTop': {isMinimized: localStorage.getItem('leftTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftTop'},
+            'leftBottom': {isMinimized: localStorage.getItem('leftBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'leftBottom'},
+            'rightTop': {isMinimized: localStorage.getItem('rightTop') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightTop'},
+            'rightBottom': {isMinimized: localStorage.getItem('rightBottom') === 'true', minimize: null, count: null, panels: [], minimized: [], dir: 'rightBottom'}
+        };
+    }
 
     /**
      * initialize the debug panels (must be called before adding panels)
@@ -27,7 +31,7 @@ const Debug = {
      * may also include options for the default debug panel (see Debug.add() for a list of options)
      * @return {HTMLElement} div where panel was created
      */
-    init: function(options)
+    init(options)
     {
         options = options || {};
         options.size = options.size || 0.25;
@@ -38,14 +42,14 @@ const Debug = {
         window.addEventListener('error', Debug._error);
         document.addEventListener('keypress', Debug._keypress);
         return Debug.add('debug', options);
-    },
+    }
 
     /**
      * change side of an existing panel
      * @param {HTMLElement} div - panel returned by Debug
      * @param {string} side
      */
-    changeSide: function(div, sideName)
+    changeSide(div, sideName)
     {
         // remove from old side
         const panels = div.side.panels;
@@ -58,7 +62,7 @@ const Debug = {
         side.panels[div.name] = div;
         div.side = side;
         Debug._resizeSide(side);
-    },
+    }
 
     /**
      * add debug panel
@@ -73,7 +77,7 @@ const Debug = {
      * @param {string=} parent - attach to another panel (to the left or right, depending on the side of the panel)
      * @return {HTMLElement} div where panel was created
      */
-    add: function(name, options)
+    add(name, options)
     {
         options = options || {};
         const div = document.createElement('div');
@@ -119,7 +123,7 @@ const Debug = {
         }
         Debug.resize();
         return div;
-    },
+    }
 
     /**
      * creates a meter (useful for FPS)
@@ -130,7 +134,7 @@ const Debug = {
      * @param {number} [height=25] in pixels
      * @return {HTMLElement} div where panel was created
      */
-    addMeter: function(name, options)
+    addMeter(name, options)
     {
         options = options || {};
         const div = document.createElement('canvas');
@@ -166,7 +170,7 @@ const Debug = {
         }
         Debug.resize();
         return div;
-    },
+    }
 
     /**
      * adds a line to the end of the meter and scrolls the meter as necessary
@@ -176,7 +180,7 @@ const Debug = {
      * @param {string=} options.name of panel to add the line
      * @param {object=} options.panel - div of panel as returned by Debug.add()
      */
-    meter: function(percent, options)
+    meter(percent, options)
     {
         options = options || {};
         const div = Debug._getDiv(options);
@@ -199,7 +203,7 @@ const Debug = {
             height = middle * percent;
             c.fillRect(div.width - 1, height, div.width - 1, middle - height);
         }
-    },
+    }
 
     /**
      * adds a panel with a browser link
@@ -213,7 +217,7 @@ const Debug = {
      * @param {object=} style - additional css styles to apply to link
      * @return {HTMLElement} div where panel was created
      */
-    addLink: function(name, link, options)
+    addLink(name, link, options)
     {
         options = options || {};
         var div = document.createElement('div');
@@ -249,7 +253,7 @@ const Debug = {
         Debug._click(div);
         Debug.resize();
         return div;
-    },
+    }
 
     /**
      * adds text to the end of in the panel and scrolls the panel
@@ -260,7 +264,7 @@ const Debug = {
      * @param {HTMLElement=} options.panel returned from Debug.Add()
      * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
      */
-    log: function()
+    log()
     {
         var decoded = Debug._decode(arguments);
         var text = decoded.text;
@@ -304,7 +308,7 @@ const Debug = {
             Debug.defaultDiv.expanded = true;
             Debug.resize();
         }
-    },
+    }
 
     /**
      * replaces all text in the panel
@@ -312,7 +316,7 @@ const Debug = {
      * @param {string=} options.name of panel
      * @param {HTMLElement=} options.panel returned from Debug.Add()
      */
-    one: function()
+    one()
     {
         var decoded = Debug._decode(arguments);
         var text = decoded.text || [];
@@ -340,13 +344,13 @@ const Debug = {
         }
         html += '</span>';
         div.innerHTML = html;
-    },
+    }
 
     /**
      * adds a debug message showing who called the function
      * @param {object} options (see Debug.debug)
      */
-    caller: function(options)
+    caller(options)
     {
         if (arguments.callee.caller)
         {
@@ -356,14 +360,14 @@ const Debug = {
         {
             Debug.log('Called by: top level', options);
         }
-    },
+    }
 
     /**
      * returns a panel based on its name
      * @param {string} name of panel
      * @return {HTMLElement} panel or null if not found
      */
-    get: function(name)
+    get(name)
     {
         for (var side in Debug.sides)
         {
@@ -373,12 +377,12 @@ const Debug = {
             }
         }
         return null;
-    },
+    }
 
     /**
      * resize all panels
      */
-    resize: function()
+    resize()
     {
         function side(dir)
         {
@@ -391,13 +395,14 @@ const Debug = {
         side('rightBottom');
         side('leftTop');
         side('rightTop');
-    },
+    }
 
     /**
      * converts side string to proper case and ordering for comparison
+     * @params {object} options - as provided to Debug.add...()
      * @private
-     * */
-    _getSide: function(options)
+     */
+    _getSide(options)
     {
         if (options.parent)
         {
@@ -429,13 +434,13 @@ const Debug = {
         {
             return Debug.sides['rightBottom'];
         }
-    },
+    }
 
     /**
      * returns correct div based on options
      * @private
      */
-    _getDiv: function(options)
+    _getDiv(options)
     {
         var div;
         if (!options.panel && !options.name)
@@ -463,13 +468,13 @@ const Debug = {
             div = Debug.defaultDiv;
         }
         return div;
-    },
+    }
 
     /**
      * decodes Debug.log or Debug.one parameters
      * @private
      */
-    _decode: function(args)
+    _decode(args)
     {
         var options, text = [], i;
 
@@ -503,13 +508,13 @@ const Debug = {
             }
         }
         return {text: text, options: options};
-    },
+    }
 
     /**
      * creates a default style for a div
      * @private
      */
-    _style: function(div, side)
+    _style(div, side)
     {
         var s = div.style;
         s.fontFamily = 'Helvetica Neue';
@@ -523,13 +528,13 @@ const Debug = {
         s.wordWrap = 'break-word';
         s.overflow = 'auto';
         s.zIndex = 1000;
-    },
+    }
 
     /**
      * creates the minimize button when adding the first panel for that side
      * @private
      */
-    _minimizeCreate: function(side)
+    _minimizeCreate(side)
     {
         if (side.minimize)
         {
@@ -576,26 +581,26 @@ const Debug = {
         side.count = count;
         Debug._click(side.count, Debug._isLeft);
         Debug._click(minimize, Debug._isLeft);
-    },
+    }
 
     /**
      * event listener for panels
      * @private
      */
-    _click: function(div, isLeft)
+    _click(div, isLeft)
     {
         div.addEventListener('click', div.click);
         div.addEventListener('touchstart', div.click);
         div.style.pointerEvents = 'auto';
         div.isLeft = isLeft;
-    },
+    }
 
     /**
      * minimizes panel
      * @param {Event} e
      * @private
      */
-    _handleMinimize: function(e)
+    _handleMinimize(e)
     {
         var div = e.currentTarget;
         var side = e.currentTarget.offsetParent.side;
@@ -603,27 +608,27 @@ const Debug = {
         window.localStorage.setItem(side.dir, side.isMinimized);
         div.innerHTML = side.isMinimized ? '+' : '&mdash;';
         Debug.resize();
-    },
+    }
 
     /**
      * provides count to display next to minimize button
      * @param {Event} e
      * @private
      */
-    _handleCount: function(e)
+    _handleCount(e)
     {
         var side = e.currentTarget.offsetParent.side;
         var div = side.minimized.pop();
         localStorage.setItem(div.side.dir + '-' + div.name, 'false');
         Debug.resize();
-    },
+    }
 
     /**
      * handler for click
      * @param {Event} e
      * @private
      */
-    _handleClick: function(e)
+    _handleClick(e)
     {
         var div = e.currentTarget;
         if (div.type === 'link')
@@ -656,14 +661,14 @@ const Debug = {
             }
         }
         Debug.resize();
-    },
+    }
 
     /**
      * resize individual side
      * @param {object} side returned by Debug._getSide()
      * @private
      */
-    _resizeSide: function(side)
+    _resizeSide(side)
     {
         if (side.isMinimized)
         {
@@ -770,44 +775,44 @@ const Debug = {
                 side.count.innerHTML = count;
             }
         }
-    },
+    }
 
     /**
      * @param {object} side returned by Debug._getSide
      * @return {boolean} whether on the left side
      */
-    _isLeft: function(side)
+    _isLeft(side)
     {
         return side.dir.indexOf('left') !== -1;
-    },
+    }
 
     /**
      * @param {object} side returned by Debug._getSide
      * @return {boolean} whether on the bottom side
      */
-    _isBottom: function(side)
+    _isBottom(side)
     {
         return side.dir.indexOf('Bottom') !== -1;
-    },
+    }
 
     /**
      * handler for ` key used to expand default debug box
      * @param {Event} e
      */
-    _keypress: function(e)
+    _keypress(e)
     {
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
         if (code === 96)
         {
             Debug._handleClick({currentTarget: Debug.defaultDiv});
         }
-    },
+    }
 
     /**
      * handler for errors
      * @param {Event} e
      */
-    _error: function(e)
+    _error(e)
     {
         console.error(e);
         Debug.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
