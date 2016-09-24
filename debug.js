@@ -637,7 +637,11 @@ class Debug
      */
     _handleClick(e)
     {
-        e.preventDefault();
+        // don't prevent default if coming from handleClick
+        if (!e.cheat)
+        {
+            e.preventDefault();
+        }
         var div = e.currentTarget;
         if (div.type === 'link')
         {
@@ -808,7 +812,7 @@ class Debug
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
         if (code === 96)
         {
-            this._handleClick({currentTarget: this.defaultDiv});
+            this._handleClick({currentTarget: this.defaultDiv, cheat: true});
         }
     }
 
