@@ -638,6 +638,7 @@ class Debug
      */
     _handleClick(e)
     {
+        e.preventDefault();
         var div = e.currentTarget;
         if (div.type === 'link')
         {
