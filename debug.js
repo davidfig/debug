@@ -597,7 +597,7 @@ class Debug
     _click(div, isLeft)
     {
         div.addEventListener('click', div.click.bind(this));
-        div.addEventListener('touchstart', div.click.bind(this));
+        div.addEventListener('touchend', div.click.bind(this));
         div.style.pointerEvents = 'auto';
         div.isLeft = isLeft;
     }
