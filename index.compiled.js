@@ -1,11 +1,12 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/*
-    Debug panels for javascript
-    debug.js <https://github.com/davidfig/debug>
-    Released under MIT license <https://github.com/davidfig/debug/blob/master/LICENSE>
-    Author: David Figatner
-    Copyright (c) 2016 YOPEY YOPEY LLC
-*/
+/**
+ * @file debug.js
+ * @summary Debug panels for javascript
+ * @author David Figatner
+ * @license MIT
+ * @copyright YOPEY YOPEY LLC 2016
+ * {@link https://github.com/davidfig/debug}
+ */
 
 /** @class */
 class Debug
@@ -638,31 +639,32 @@ class Debug
      */
     _handleClick(e)
     {
-        e.preventDefault();
         var div = e.currentTarget;
         if (div.type === 'link')
         {
             return;
         }
+        // don't prevent default if coming from handleClick
+        if (!e.cheat)
+        {
+            e.preventDefault();
+        }
+        if (div.options.expandable)
+        {
+            div.expanded = !div.expanded;
+        }
         else
         {
-            if (div.options.expandable)
+            var index = div.side.minimized.indexOf(div);
+            if (index === -1)
             {
-                div.expanded = !div.expanded;
+                div.side.minimized.push(div);
+                localStorage.setItem(div.side.dir + '-' + div.name, 'true');
             }
             else
             {
-                var index = div.side.minimized.indexOf(div);
-                if (index === -1)
-                {
-                    div.side.minimized.push(div);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'true');
-                }
-                else
-                {
-                    div.side.minimized.splice(index, 1);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
-                }
+                div.side.minimized.splice(index, 1);
+                localStorage.setItem(div.side.dir + '-' + div.name, 'false');
             }
         }
         this.resize();
@@ -809,7 +811,7 @@ class Debug
         var code = (typeof e.which === 'number') ? e.which : e.keyCode;
         if (code === 96)
         {
-            this._handleClick({currentTarget: this.defaultDiv});
+            this._handleClick({currentTarget: this.defaultDiv, cheat: true});
         }
     }
 
