@@ -1,10 +1,11 @@
-/*
-    Debug panels for javascript
-    debug.js <https://github.com/davidfig/debug>
-    Released under MIT license <https://github.com/davidfig/debug/blob/master/LICENSE>
-    Author: David Figatner
-    Copyright (c) 2016 YOPEY YOPEY LLC
-*/
+/**
+ * @file debug.js
+ * @summary Debug panels for javascript
+ * @author David Figatner
+ * @license MIT
+ * @copyright YOPEY YOPEY LLC 2016
+ * {@link https://github.com/davidfig/debug}
+ */
 
 /** @class */
 class Debug
@@ -637,35 +638,32 @@ class Debug
      */
     _handleClick(e)
     {
-        // don't prevent default if coming from handleClick
-        if (!e.cheat)
-        {
-            e.preventDefault();
-        }
         var div = e.currentTarget;
         if (div.type === 'link')
         {
             return;
         }
+        // don't prevent default if coming from handleClick
+        if (!e.cheat)
+        {
+            e.preventDefault();
+        }
+        if (div.options.expandable)
+        {
+            div.expanded = !div.expanded;
+        }
         else
         {
-            if (div.options.expandable)
+            var index = div.side.minimized.indexOf(div);
+            if (index === -1)
             {
-                div.expanded = !div.expanded;
+                div.side.minimized.push(div);
+                localStorage.setItem(div.side.dir + '-' + div.name, 'true');
             }
             else
             {
-                var index = div.side.minimized.indexOf(div);
-                if (index === -1)
-                {
-                    div.side.minimized.push(div);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'true');
-                }
-                else
-                {
-                    div.side.minimized.splice(index, 1);
-                    localStorage.setItem(div.side.dir + '-' + div.name, 'false');
-                }
+                div.side.minimized.splice(index, 1);
+                localStorage.setItem(div.side.dir + '-' + div.name, 'false');
             }
         }
         this.resize();
