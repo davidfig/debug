@@ -1,6 +1,6 @@
 {
   "name": "yy-debug",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Javascript Debug Panels (useful for game development)",
   "main": "debug.js",
   "scripts": {

@@ -802,7 +802,9 @@ class Debug
     }
 
     /**
-     * handler for ` key used to expand default debug box
+     * handler for:
+     *  ` key used to expand default debug box
+     *  c/C key to copy contents of default div to clipboard
      * @param {Event} e
      */
     _keypress(e)
@@ -811,6 +813,10 @@ class Debug
         if (code === 96)
         {
             this._handleClick({currentTarget: this.defaultDiv, cheat: true});
+        }
+        if (code === 67 || code === 99)
+        {
+            this.clipboard(this.defaultDiv.textContent);
         }
     }
 
@@ -822,6 +828,23 @@ class Debug
     {
         console.error(e);
         this.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
+    }
+
+    /**
+     * copies text to clipboard
+     * called after pressing c or C (if input is allowed to bubble down)
+     * from http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+     * @param {string} text
+     */
+    clipboard(text)
+    {
+        var textArea = document.createElement('textarea');
+        textArea.style.alpha = 0;
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
     }
 };
 
