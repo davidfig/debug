@@ -63,6 +63,7 @@ include debug.js in your project or add to your workflow
     * [._isBottom(side)](#Debug+_isBottom) ⇒ <code>boolean</code>
     * [._keypress(e)](#Debug+_keypress)
     * [._error(e)](#Debug+_error)
+    * [.clipboard(text)](#Debug+clipboard)
 
 <a name="Debug+init"></a>
 
@@ -251,7 +252,9 @@ resize all panels
 <a name="Debug+_keypress"></a>
 
 ### debug._keypress(e)
-handler for ` key used to expand default debug box
+handler for:
+ ` key used to expand default debug box
+ c/C key to copy contents of default div to clipboard
 
 **Kind**: instance method of <code>[Debug](#Debug)</code>  
 
@@ -269,6 +272,19 @@ handler for errors
 | Param | Type |
 | --- | --- |
 | e | <code>Event</code> | 
+
+<a name="Debug+clipboard"></a>
+
+### debug.clipboard(text)
+copies text to clipboard
+called after pressing c or C (if input is allowed to bubble down)
+from http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type |
+| --- | --- |
+| text | <code>string</code> | 
 
 
 * * *
