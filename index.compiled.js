@@ -64,6 +64,20 @@ class Debug
     }
 
     /**
+     * remove a debug panel
+     * @param {object|string} div or name of panel
+     */
+    remove(name)
+    {
+        const div = (typeof name === 'string') ? this.get(name) : name;
+        const side = div.side;
+        delete side.panels[div.name];
+        document.body.removeChild(div);
+        localStorage.setItem(side.dir + '-' + div.name, false);
+        this._resizeSide(side);
+    }
+
+    /**
      * add debug panel
      * @param {string} name of panel
      * @param {object} [options]
@@ -612,7 +626,7 @@ class Debug
     _handleMinimize(e)
     {
         var div = e.currentTarget;
-        var side = e.currentTarget.offsetParent.side;
+        var side = div.offsetParent.side;
         side.isMinimized = !side.isMinimized;
         window.localStorage.setItem(side.dir, side.isMinimized);
         div.innerHTML = side.isMinimized ? '+' : '&mdash;';
@@ -803,7 +817,9 @@ class Debug
     }
 
     /**
-     * handler for ` key used to expand default debug box
+     * handler for:
+     *  ` key used to expand default debug box
+     *  c/C key to copy contents of default div to clipboard
      * @param {Event} e
      */
     _keypress(e)
@@ -812,6 +828,10 @@ class Debug
         if (code === 96)
         {
             this._handleClick({currentTarget: this.defaultDiv, cheat: true});
+        }
+        if (code === 67 || code === 99)
+        {
+            this.clipboard(this.defaultDiv.textContent);
         }
     }
 
@@ -823,6 +843,23 @@ class Debug
     {
         console.error(e);
         this.log((e.message ? e.message : (e.error && e.error.message ? e.error.message : '')) + ' at ' + e.filename + ' line ' + e.lineno, {color: 'error'});
+    }
+
+    /**
+     * copies text to clipboard
+     * called after pressing c or C (if input is allowed to bubble down)
+     * from http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+     * @param {string} text
+     */
+    clipboard(text)
+    {
+        var textArea = document.createElement('textarea');
+        textArea.style.alpha = 0;
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
     }
 };
 
@@ -859,6 +896,11 @@ const link = Debug.addLink('github', 'https://github.com/davidfig/debug', {side:
 Debug.addLink('issues', 'htps://github.com/davidfig/debug/issues', {parent: link});
 
 const lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
+
+// test removing a panel that has been minimized
+const remove = Debug.add('remove', {text: 'this panel will be removed. you shouldn\'t see this.'});
+Debug._handleClick({currentTarget: remove, preventDefault: function() {}}); // bunch of crap to simulate a minimize click
+Debug.remove(remove);
 
 // this will erase the previous message
 Debug.one('Try pressing on a panel', 'or the minimize "-" button near a panel set', {panel: lower});

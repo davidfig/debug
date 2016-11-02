@@ -27,6 +27,11 @@ Debug.addLink('issues', 'htps://github.com/davidfig/debug/issues', {parent: link
 
 const lower = Debug.add('lower', {text: 'Here\'s a panel in the lower left side.', side: 'leftBottom', size: 0.3});
 
+// test removing a panel that has been minimized
+const remove = Debug.add('remove', {text: 'this panel will be removed. you shouldn\'t see this.'});
+Debug._handleClick({currentTarget: remove, preventDefault: function() {}}); // bunch of crap to simulate a minimize click
+Debug.remove(remove);
+
 // this will erase the previous message
 Debug.one('Try pressing on a panel', 'or the minimize "-" button near a panel set', {panel: lower});
 
