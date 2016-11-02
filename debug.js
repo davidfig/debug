@@ -63,6 +63,20 @@ class Debug
     }
 
     /**
+     * remove a debug panel
+     * @param {object|string} div or name of panel
+     */
+    remove(name)
+    {
+        const div = (typeof name === 'string') ? this.get(name) : name;
+        const side = div.side;
+        delete side.panels[div.name];
+        document.body.removeChild(div);
+        localStorage.setItem(side.dir + '-' + div.name, false);
+        this._resizeSide(side);
+    }
+
+    /**
      * add debug panel
      * @param {string} name of panel
      * @param {object} [options]
@@ -611,7 +625,7 @@ class Debug
     _handleMinimize(e)
     {
         var div = e.currentTarget;
-        var side = e.currentTarget.offsetParent.side;
+        var side = div.offsetParent.side;
         side.isMinimized = !side.isMinimized;
         window.localStorage.setItem(side.dir, side.isMinimized);
         div.innerHTML = side.isMinimized ? '+' : '&mdash;';
