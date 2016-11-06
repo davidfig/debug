@@ -49,6 +49,7 @@ include debug.js in your project or add to your workflow
 * [Debug](#Debug)
     * [.init([options])](#Debug+init) ⇒ <code>HTMLElement</code>
     * [.changeSide(div, side)](#Debug+changeSide)
+    * [.remove(div)](#Debug+remove)
     * [.add(name, [options], [style], [text], [parent])](#Debug+add) ⇒ <code>HTMLElement</code>
     * [.addMeter(name, [options])](#Debug+addMeter) ⇒ <code>HTMLElement</code>
     * [.meter(percent, [options])](#Debug+meter)
@@ -91,6 +92,17 @@ change side of an existing panel
 | --- | --- | --- |
 | div | <code>HTMLElement</code> | panel returned by Debug |
 | side | <code>string</code> |  |
+
+<a name="Debug+remove"></a>
+
+### debug.remove(div)
+remove a debug panel
+
+**Kind**: instance method of <code>[Debug](#Debug)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| div | <code>object</code> &#124; <code>string</code> | or name of panel |
 
 <a name="Debug+add"></a>
 
@@ -175,6 +187,7 @@ adds text to the end of in the panel and scrolls the panel
 | [options] | <code>object</code> |  |  |
 | [options.color] | <code>string</code> |  | background color for text (in CSS) |
 | [options.name] | <code>string</code> |  | of panel |
+| [options.debug] | <code>boolean</code> |  | invoke debugger from javascript |
 | [options.panel] | <code>HTMLElement</code> |  | returned from this.Add() |
 | [options.console] | <code>boolean</code> | <code>false</code> | print to console instead of panel (useful for fast updating messages) |
 
@@ -189,6 +202,7 @@ replaces all text in the panel
 | --- | --- | --- |
 | text | <code>Array.&lt;string&gt;</code> &#124; <code>string</code> | may be an array or you can include multiple strings: text1, text2, text3, [options] |
 | [options.name] | <code>string</code> | of panel, defaults to defaultDiv |
+| [options.debug] | <code>boolean</code> | invoke debugger from javascript |
 | [options.panel] | <code>HTMLElement</code> | returned from this.Add() |
 
 <a name="Debug+caller"></a>
