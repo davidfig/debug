@@ -321,7 +321,7 @@ class Debug
             this.defaultDiv.expanded = true;
             this.resize();
         }
-        if (options.debugger)
+        if (options.debug)
         {
             debugger;
         }
