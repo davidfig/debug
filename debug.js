@@ -273,6 +273,7 @@ class Debug
      * @param {object} [options]
      * @param {string} [options.color] background color for text (in CSS)
      * @param {string} [options.name] of panel
+     * @param {boolean} [options.debug] invoke debugger from javascript
      * @param {HTMLElement} [options.panel] returned from this.Add()
      * @param {boolean} [options.console=false] print to console instead of panel (useful for fast updating messages)
      */
@@ -320,12 +321,17 @@ class Debug
             this.defaultDiv.expanded = true;
             this.resize();
         }
+        if (options.debugger)
+        {
+            debugger;
+        }
     }
 
     /**
      * replaces all text in the panel
      * @param {string[]|...string} text - may be an array or you can include multiple strings: text1, text2, text3, [options]
      * @param {string} [options.name] of panel, defaults to defaultDiv
+     * @param {boolean} [options.debug] invoke debugger from javascript
      * @param {HTMLElement} [options.panel] returned from this.Add()
      */
     one()
@@ -356,6 +362,10 @@ class Debug
         }
         html += '</span>';
         div.innerHTML = html;
+        if (options.debug)
+        {
+            debugger;
+        }
     }
 
     /**
