@@ -39,6 +39,10 @@ class Debug
         window.addEventListener('resize', this.resize.bind(this));
         window.addEventListener('error', this._error.bind(this));
         document.addEventListener('keypress', this._keypress.bind(this));
+        Debug.body = document.createElement('div');
+        Debug.body.style.position = 'absolute';
+        Debug.body.id = 'yy-debug';
+        document.body.appendChild(Debug.body);
         return this.add('debug', options);
     }
 
@@ -71,7 +75,7 @@ class Debug
         const div = (typeof name === 'string') ? this.get(name) : name;
         const side = div.side;
         delete side.panels[div.name];
-        document.body.removeChild(div);
+        Debug.body.removeChild(div);
         localStorage.setItem(side.dir + '-' + div.name, false);
         this._resizeSide(side);
     }
@@ -93,7 +97,7 @@ class Debug
     {
         options = options || {};
         const div = document.createElement('div');
-        document.body.appendChild(div);
+        Debug.body.appendChild(div);
         div.name = name;
         div.options = options;
         if (!this.defaultDiv || options.default)
@@ -155,7 +159,7 @@ class Debug
         div.height = options.height || 25;
         div.style.width = div.width + 'px';
         div.style.height = div.height + 'px';
-        document.body.appendChild(div);
+        Debug.body.appendChild(div);
         div.name = name;
         div.options = options;
         const side = this._getSide(options);
@@ -233,7 +237,7 @@ class Debug
     {
         options = options || {};
         var div = document.createElement('div');
-        document.body.appendChild(div);
+        Debug.body.appendChild(div);
         div.type = 'link';
         div.name = name;
         div.innerHTML = '<a style="color: white" target="_blank" href="' + link + '">' + name + '</a>';
@@ -572,7 +576,7 @@ class Debug
         }
         var div = document.createElement('div');
         div.options = {};
-        document.body.appendChild(div);
+        Debug.body.appendChild(div);
         var s = div.style;
         div.side = side;
         if (this._isLeft(side))
