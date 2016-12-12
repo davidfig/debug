@@ -1,6 +1,3 @@
-// for eslint
-/* globals setInterval, XMLHttpRequest, window, document */
-
 const Debug = require('../debug/debug.js');
 
 Debug.init({color: 'rgba(180,150,150,0.5)'});
@@ -60,3 +57,6 @@ window.onload = function()
     };
     client.send();
 };
+
+// for eslint
+/* globals setInterval, XMLHttpRequest, window, document */
