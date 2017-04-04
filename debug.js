@@ -9,6 +9,9 @@
 
 const clicked = require('clicked');
 
+/**
+ * @static
+ */
 const Debug = {
     defaultDiv: null,
     sides: {
