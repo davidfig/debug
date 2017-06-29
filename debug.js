@@ -44,7 +44,7 @@ const Debug = {
         Debug.body.style.position = 'absolute';
         Debug.body.id = 'yy-debug';
         document.body.appendChild(Debug.body);
-        if (!options.noPanel)
+        if (!options.noDefaultDiv)
         {
             return Debug.add('debug', options);
         }
