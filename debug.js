@@ -27,6 +27,7 @@ const Debug = {
      * @param {object} [options]
      * @param {number} [options.padding=7] between parent panels
      * @param {string} [options.color='rgba(150,150,150,0.5)'] - default CSS background color for panels
+     * @param {boolean} [options.noDefaultDiv] - turn off default panel
      * @return {HTMLElement} div where panel was created
      */
     init: function(options)
@@ -43,7 +44,10 @@ const Debug = {
         Debug.body.style.position = 'absolute';
         Debug.body.id = 'yy-debug';
         document.body.appendChild(Debug.body);
-        return Debug.add('debug', options);
+        if (!options.noPanel)
+        {
+            return Debug.add('debug', options);
+        }
     },
 
     /**
@@ -200,6 +204,10 @@ const Debug = {
     {
         options = options || {};
         const div = Debug._getDiv(options);
+        if (!div)
+        {
+            return;
+        }
         const c = div.getContext('2d');
         const data = c.getImageData(0, 0, div.width, div.height);
         c.putImageData(data, -1, 0);
@@ -297,6 +305,10 @@ const Debug = {
             return;
         }
         var div = Debug._getDiv(options);
+        if (!div)
+        {
+            return;
+        }
         if (options.color)
         {
             div.style.backgroundColor = options.color === 'error' ? 'red' : options.color;
@@ -344,6 +356,10 @@ const Debug = {
         var text = decoded.text || [];
         var options = decoded.options || {};
         var div = Debug._getDiv(options);
+        if (!div)
+        {
+            return;
+        }
         if (options.color)
         {
             div.style.backgroundColor = options.color;
